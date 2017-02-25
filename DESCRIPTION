@@ -1,0 +1,20 @@
+Package: cpbaywave
+Title: Bayesian Wavelet based Change Point Detection
+Version: 0.1
+Authors@R: c(person("Darrin", "Speegle", email = "speegled@slu.edu", role = c("aut", "cre")),
+    person("Steward", "Robert", email = "rstewa12@slu.edu", role = c("aut")))
+Description: This package detects change point locations of the mean in multi-dimensional time series data.  
+Depends: R (>= 3.3.2)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    wavethresh,
+    clusterGeneration,
+    mvtnorm,
+    MASS,
+    far,
+    utils,
+    stats,
+    graphics
+RoxygenNote: 6.0.1

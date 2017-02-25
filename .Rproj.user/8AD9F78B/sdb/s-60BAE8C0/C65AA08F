@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "Package: cpbaywave\nTitle: Bayesian Wavelet based Change Point Detection\nVersion: 0.1\nAuthors@R: c(person(\"Darrin\", \"Speegle\", email = \"speegled@slu.edu\", role = c(\"aut\", \"cre\")),\n    person(\"Steward\", \"Robert\", email = \"rstewa12@slu.edu\", role = c(\"aut\")))\nDescription: This package detects change point locations of the mean in multi-dimensional time series data.  \nDepends: R (>= 3.3.2)\nLicense: GPL-3\nEncoding: UTF-8\nLazyData: true\nImports:\n    wavethresh,\n    clusterGeneration,\n    mvtnorm,\n    MASS,\n    far,\n    utils,\n    stats,\n    graphics\nRoxygenNote: 6.0.1\n",
+    "created" : 1488055393700.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3647851741",
+    "id" : "C65AA08F",
+    "lastKnownWriteTime" : 1488055941,
+    "last_content_update" : 1488055941242,
+    "path" : "~/Documents/cpbaywave/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "dcf"
+}
