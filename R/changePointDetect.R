@@ -9,7 +9,8 @@
 #' @return index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 #' @export
 #' @examples
-#' a <- createTimeSeries()
+#' a <- createTimeSeries() #True change point at time 72
+#' plot(a[,1])
 #' detectChangePoint(a, 0:6)
 #'
 #'
