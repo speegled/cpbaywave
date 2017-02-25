@@ -10,12 +10,15 @@
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @export
 #' @examples
-#'\dontrun{data(lennon) #Requires EMD package
+#'\dontrun{
+#'
+#'data(lennon) #Requires EMD package
 #'lennon_ts <- matrix(as.vector(lennon) + rnorm(65536*120,0,1), nrow = 120, byrow = TRUE)
 #'lennon_ts[80:120,7500:8000] <- lennon_ts[80:120,7500:8000] + 40
 #'image(matrix(lennon_ts[1,], nrow = 256), col = gray(0:100/100))
 #'image(matrix(lennon_ts[90,], nrow = 256), col = gray(0:100/100))
 #'JLDetectChangePoint(lennon_ts, reducedDim = 10,useGaussian = TRUE)
+#'
 #'}
 
 

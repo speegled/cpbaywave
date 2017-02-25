@@ -24,53 +24,54 @@ index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indic
 This function creates a multi-dimensional time series with a possible change point in the mean.
 }
 \examples{
-a <- createTimeSeries()
+a <- createTimeSeries() #True change point at time 72
+plot(a[,1])
 detectChangePoint(a, 0:6)
 
 
 #Time series with no change in mean.
-dim=5   
-sig1=diag(dim)  
-mu1=rep(0,dim)  
-mu2=rep(0,dim)  
-n=128  
-tau=70 
+dim=5
+sig1=diag(dim)
+mu1=rep(0,dim)
+mu2=rep(0,dim)
+n=128
+tau=70
 series=createTimeSeries(mu1, mu2, sig1, n, tau)
-plot(series[,1])  
-dtl=c(0,1,2,3,4,5,6)  
+plot(series[,1])
+dtl=c(0,1,2,3,4,5,6)
 detectChangePoint(series,dtl)
 #value less than 3 indicates no change model is favored
 
 
 #Time series with smooth mean function with jump.
-dim=10   
-sig1=diag(dim)  
-mu1=rep(0,dim)  
-mu2=rep(1.5,dim)  
-n=90  
-tau=20 
+dim=10
+sig1=diag(dim)
+mu1=rep(0,dim)
+mu2=rep(1.5,dim)
+n=90
+tau=20
 series1=createTimeSeries(mu1, mu2, sig1, n, tau)
 sn=sin(2*pi*1:n/n)
 series2=sn+series1
-plot(series2[,2])  
-dtl=c(0,1,2,3,4,5)  
+plot(series2[,2])
+dtl=c(0,1,2,3,4,5)
 detectChangePoint(series2,dtl, useBFIC = TRUE)
 #value greater than 3 indicates change model is favored
 detectChangePoint(series2,dtl)
 
 
 #Time series with smooth mean function, no jump
-dim=3   
-sig1=diag(dim)  
-mu1=rep(0,dim)  
-mu2=rep(0,dim)  
-n=256  
-tau=105 
+dim=3
+sig1=diag(dim)
+mu1=rep(0,dim)
+mu2=rep(0,dim)
+n=256
+tau=105
 series1=createTimeSeries(mu1, mu2, sig1, n, tau)
 sn=sin(2*pi*1:n/n)
 series2=sn+series1
-plot(series2[,2])  
-dtl=c(0,1,2,3,4,5)  
+plot(series2[,2])
+dtl=c(0,1,2,3,4,5)
 detectChangePoint(series2,dtl)
 #value less than 3 indicates no change-model is favored
 }
