@@ -64,6 +64,7 @@
 
 detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
+    if(is.vector(a)) a <- matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
 
     if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
@@ -73,7 +74,11 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
     if(wid > 50) warning("This computation is likely numerically unstable. Consider JLdetectChangePoint instead.")
 
-
+    #If vector, create matrix with both columns the same. This is hack that should be fixed.
+    if(wid == 1) {
+      a <- matrix(c(a,a + rnorm(n,0,.01)),ncol = 2)
+      wid <- 2
+    }
     # pad with normal data at top of a, centered at first element of time series
     nxt <- 2^(ceiling(log2(n)))
     pad1 <- nxt - n
@@ -82,7 +87,10 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     #data <- rbind(matrix(stats::rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
 
     #Trying mirror padding. Seems better based on simulations.
-    if(pad1 > 0) data <- rbind(a[pad1:1,], a)
+    #if(pad1 > 0) data <- rbind(a[pad1:1,], a)
+
+    #Padding by repeating first entry
+    if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
 
     # re-establish length
     n <- nxt
