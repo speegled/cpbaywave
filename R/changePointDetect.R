@@ -1,7 +1,7 @@
 #' Change Point Detection
 #'
 #' This function creates a multi-dimensional time series with a possible change point in the mean.
-#' @param a The multi-dimensional time series. Each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
+#' @param a A vector or matrix representing time series. IF matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
 #' @param setdetail The detail levels of the wavelet transform to use to detect change in mean. Default is all levels.
 #' @param useBFIC Set to true to choose the change point with highest BFIC.
 #' @param showplot Set to true to see a plot of the probabilities of a change point at each time.
