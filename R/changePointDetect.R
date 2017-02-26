@@ -13,6 +13,9 @@
 #' plot(a[,1])
 #' detectChangePoint(a, 0:6)
 #'
+#' a <- createTimeSeries(mu1 = 1, mu2 = 0, sigma = 1, n = 100, tau = 55)
+#' plot(a[,1])
+#' detectChangePoint(a)
 #'
 #' #Time series with no change in mean.
 #' dim=5
@@ -64,6 +67,7 @@
 
 detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
+    if(is.vector(a)) a <- matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
 
     if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
@@ -73,7 +77,11 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
     if(wid > 50) warning("This computation is likely numerically unstable. Consider JLdetectChangePoint instead.")
 
-
+    #If vector, create matrix with both columns the same. This is hack that should be fixed.
+    if(wid == 1) {
+      a <- matrix(c(a,a + stats::rnorm(n,0,.01)),ncol = 2)
+      wid <- 2
+    }
     # pad with normal data at top of a, centered at first element of time series
     nxt <- 2^(ceiling(log2(n)))
     pad1 <- nxt - n
@@ -83,6 +91,9 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
     #Trying mirror padding. Seems better based on simulations.
     if(pad1 > 0) data <- rbind(a[pad1:1,], a)
+
+    #Padding by repeating first entry
+    #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
 
     # re-establish length
     n <- nxt
@@ -125,7 +136,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     # there are?
     probvec[is.nan(probvec)] <- min(probvec)
 
-    indices <- match(utils::head(sort(probvec, decreasing = TRUE), 5), probvec)
+    indices <- match(utils::head(sort(probvec[pad1:n], decreasing = TRUE), 5), probvec[pad1:n])
 
-    return(list(value = value, index = indices - pad1))
+    return(list(value = value, index = indices))
 }

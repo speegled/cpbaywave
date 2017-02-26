@@ -28,6 +28,9 @@ a <- createTimeSeries() #True change point at time 72
 plot(a[,1])
 detectChangePoint(a, 0:6)
 
+a <- createTimeSeries(mu1 = 1, mu2 = 0, sigma = 1, n = 100, tau = 55)
+plot(a[,1])
+detectChangePoint(a)
 
 #Time series with no change in mean.
 dim=5
