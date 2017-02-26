@@ -79,11 +79,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
     #If vector, create matrix with both columns the same. This is hack that should be fixed.
     if(wid == 1) {
-<<<<<<< HEAD
       a <- matrix(c(a,a + stats::rnorm(n,0,.01)),ncol = 2)
-=======
-      a <- matrix(c(a,a + rnorm(n,0,.01)),ncol = 2)
->>>>>>> e30eb64c226428d2872acc676a79822f5234931a
       wid <- 2
     }
     # pad with normal data at top of a, centered at first element of time series
@@ -94,10 +90,10 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     #data <- rbind(matrix(stats::rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
 
     #Trying mirror padding. Seems better based on simulations.
-    #if(pad1 > 0) data <- rbind(a[pad1:1,], a)
+    if(pad1 > 0) data <- rbind(a[pad1:1,], a)
 
     #Padding by repeating first entry
-    if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
+    #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
 
     #Padding by repeating first entry
     #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
