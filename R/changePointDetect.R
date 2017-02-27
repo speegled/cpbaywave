@@ -1,6 +1,6 @@
-#' Change Point Detection
+#' Detect Change Point
 #'
-#' This function creates a multi-dimensional time series with a possible change point in the mean.
+#' Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean.
 #' @param a A vector or matrix representing time series. IF matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
 #' @param setdetail The detail levels of the wavelet transform to use to detect change in mean. Default is all levels.
 #' @param useBFIC Set to true to choose the change point with highest BFIC.
@@ -74,12 +74,14 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     F <- 10
     n <- nrow(a)
     wid <- ncol(a)
+    isDataVector <- FALSE
 
     if(wid > 50) warning("This computation is likely numerically unstable. Consider JLdetectChangePoint instead.")
 
     #If vector, create matrix with both columns the same. This is hack that should be fixed.
     if(wid == 1) {
-      a <- matrix(c(a,a + stats::rnorm(n,0,.01)),ncol = 2)
+      isDataVector <- TRUE
+      a <- matrix(c(a,a + runif(n, -.01,.01)),ncol = 2)
       wid <- 2
     }
     # pad with normal data at top of a, centered at first element of time series
@@ -121,8 +123,8 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
         computeProb(DWTmat, Qvec, useBFIC)
     })
 
-    if (showplot)
-        graphics::plot(probvec, type = "l")
+
+
 
     # If M1 > 3, good evidence of change point
     M2 = max(probvec)
@@ -134,6 +136,55 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
 
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
+    indices <- match(utils::head(sort(probvec[pad1:n], decreasing = TRUE), 5), probvec[pad1:n])
+
+    if (showplot) {
+      BFIC <-  M2 - M1 - 0.5 * wid * log(m)
+      if(isDataVector) {
+        plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
+        probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
+        if(BFIC > 3) {
+        plot1 <- ggplot(plotData, aes(x = x, y = y)) +
+          geom_point() +
+          geom_smooth(data = plotData[1:indices[1],], mapping = aes(x = x, y = y), method = "loess", se = FALSE) +
+          geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes(x = x, y = y), method = "loess", se = FALSE)
+        plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
+          geom_line()
+        grid.newpage()
+        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+        } else {
+          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE)
+          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+          }
+      } else {
+        plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
+        probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
+        if(BFIC > 3) {
+          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
+            geom_point(alpha = .5) +
+            geom_line(data = plotData[1:indices[1],], mapping = aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
+            geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
+          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+        } else {
+          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
+            geom_point(alpha = 0.5) +
+            geom_smooth(method = "loess",span = 1.5, se = FALSE)
+          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+        }
+
+      }
+    }
 
     # Remove nan and return the 5 most likely change points There shouldn't be nan, maybe rather exit with error if
     # there are?
