@@ -1,17 +1,16 @@
 #' Detect Change Point
 #'
 #' Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean.
-#' @param a A vector or matrix representing time series. IF matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
+#' @param a A vector or matrix representing time series. If matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
 #' @param setdetail The detail levels of the wavelet transform to use to detect change in mean. Default is all levels.
 #' @param useBFIC Set to true to choose the change point with highest BFIC.
-#' @param showplot Set to true to see a plot of the probabilities of a change point at each time.
+#' @param showplot Set to true to see a plot of the probabilities of a change point at each time, together with a scatterplot of the first dimension versus time.
 #' @return value The value of the BFIC or maximium probability if useBFIC = FALSE. BFIC greater than 3 is evidence that there is a change in mean.
 #' @return index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 #' @export
 #' @examples
 #' a <- createTimeSeries() #True change point at time 72
-#' plot(a[,1])
-#' detectChangePoint(a, 0:6)
+#' detectChangePoint(a, 0:6, showplot = TRUE)
 #'
 #' a <- createTimeSeries(mu1 = 1, mu2 = 0, sigma = 1, n = 100, tau = 55)
 #' plot(a[,1])
@@ -182,7 +181,6 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
           grid.newpage()
           grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
         }
-
       }
     }
 

@@ -33,8 +33,10 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   #Reduce Dimensionality of Data
   reducedData <- multiSeries %*% transMatrix
+  sd.rd <- .25 * sapply(1:reducedDim, function(x) sd(reducedData[,x]))
 
+  reducedData <- t(t(reducedData) + rnorm(nrow(reducedData * reducedDim), 0, sd.rd))
   if(missing(setdetail)) {
-    detectChangePoint(reducedData, useBFIC = useBFIC)
-  } else detectChangePoint(reducedData, setdetail, useBFIC = useBFIC)
+    detectChangePoint(reducedData, useBFIC = useBFIC, showplot = TRUE)
+  } else detectChangePoint(reducedData, setdetail, useBFIC = useBFIC, showplot = TRUE)
 }
