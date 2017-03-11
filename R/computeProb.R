@@ -7,11 +7,12 @@
 #' @export
 
 
-computeProb <- function(DWTmat, Qvec, useBFIC = FALSE) {
+computeProb <- function(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE) {
     
     m <- nrow(DWTmat)
     wid <- ncol(DWTmat)
     
+    if(!isDataVector) {
     # Compute A
     A <- t(DWTmat) %*% DWTmat
     
@@ -22,7 +23,13 @@ computeProb <- function(DWTmat, Qvec, useBFIC = FALSE) {
     C <- sum(Qvec^2)
     G <- A - (1/C) * ((B %*% t(B)))
     H <- sum(log(diag(chol(G))))
-    
+    } else{
+      A <- sum(DWTmat^2)
+      B <- sum(DWTmat * Qvec)
+      C <- sum(Qvec^2)
+      G <- A - (1/C) * B^2
+      H <- log(G)
+    }
     BFIC <- (-0.5) * log(C) + (-(m - wid - 1)/2) * log((det(A - (1/C) * ((B %*% t(B)))))) + (wid/2) * log(pi) + log(gamma(m/2 + 
         0.5 - wid/2))
     

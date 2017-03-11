@@ -80,8 +80,8 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     #If vector, create matrix with both columns the same. This is hack that should be fixed.
     if(wid == 1) {
       isDataVector <- TRUE
-      a <- matrix(c(a,a + runif(n, -.01,.01)),ncol = 2)
-      wid <- 2
+    #a <- matrix(c(a,a + runif(n, -.01,.01)),ncol = 2)
+    #wid <- 2
     }
     # pad with normal data at top of a, centered at first element of time series
     nxt <- 2^(ceiling(log2(n)))
@@ -91,7 +91,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     #data <- rbind(matrix(stats::rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
 
     #Trying mirror padding. Seems better based on simulations.
-    if(pad1 > 0) data <- rbind(a[pad1:1,], a)
+    if(pad1 > 0) data <- rbind(a[(pad1+1):1,], a)
 
     #Padding by repeating first entry
     #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
@@ -119,7 +119,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
         tauvec <- c(rep(0, x), rep(1, nxt - x))
         Qvec <- unlist(sapply(J - setdetail - 1, function(y) wavethresh::accessD(wavethresh::wd(tauvec, filter.number = F,
             family = "DaubExPhase"), y)))
-        computeProb(DWTmat, Qvec, useBFIC)
+        computeProb(DWTmat, Qvec, useBFIC, isDataVector)
     })
 
 
@@ -135,7 +135,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
 
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
-    indices <- match(utils::head(sort(probvec[pad1:n], decreasing = TRUE), 5), probvec[pad1:n])
+    indices <- match(utils::head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
     if (showplot) {
       BFIC <-  M2 - M1 - 0.5 * wid * log(m)
@@ -143,43 +143,43 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
         plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
         probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
         if(BFIC > 3) {
-        plot1 <- ggplot(plotData, aes(x = x, y = y)) +
-          geom_point() +
-          geom_smooth(data = plotData[1:indices[1],], mapping = aes(x = x, y = y), method = "loess", se = FALSE) +
-          geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes(x = x, y = y), method = "loess", se = FALSE)
-        plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
-          geom_line()
-        grid.newpage()
-        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+        plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
+          ggplot2::geom_point() +
+          ggplot2::geom_smooth(data = plotData[1:indices[1],], mapping = ggplot2::aes(x = x, y = y), method = "loess", se = FALSE) +
+          ggplot2::geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = ggplot2::aes(x = x, y = y), method = "loess", se = FALSE)
+        plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
+          ggplot2::geom_line()
+        grid::grid.newpage()
+        grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
         } else {
-          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
-            geom_point() +
-            geom_smooth(method = "loess", se = FALSE)
-          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_point() +
+            ggplot2::geom_smooth(method = "loess", se = FALSE)
+          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
+            ggplot2::geom_line()
+          grid::grid.newpage()
+          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
           }
       } else {
         plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
         probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
         if(BFIC > 3) {
-          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
-            geom_point(alpha = .5) +
-            geom_line(data = plotData[1:indices[1],], mapping = aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
-            geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
-          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_point(alpha = .5) +
+            ggplot2::geom_line(data = plotData[1:indices[1],], mapping = ggplot2::aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
+            ggplot2::geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = ggplot2::aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
+          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
+            ggplot2::geom_line()
+          grid::grid.newpage()
+          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
         } else {
-          plot1 <- ggplot(plotData, aes(x = x, y = y)) +
-            geom_point(alpha = 0.5) +
-            geom_smooth(method = "loess",span = 1.5, se = FALSE)
-          plot2 <- ggplot(probData, aes(x = x, y = probvec)) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_point(alpha = 0.5) +
+            ggplot2::geom_smooth(method = "loess",span = 1.5, se = FALSE)
+          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
+            ggplot2::geom_line()
+          grid::grid.newpage()
+          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
         }
       }
     }
@@ -188,7 +188,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     # there are?
     probvec[is.nan(probvec)] <- min(probvec)
 
-    indices <- match(utils::head(sort(probvec[pad1:n], decreasing = TRUE), 5), probvec[pad1:n])
+    indices <- match(utils::head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
     return(list(value = value, index = indices))
 }
