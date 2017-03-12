@@ -91,8 +91,11 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     #data <- rbind(matrix(stats::rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
 
     #Trying mirror padding. Seems better based on simulations.
-    if(pad1 > 0) data <- rbind(a[(pad1+1):1,], a)
-
+    if(pad1 > 0 && isDataVector == FALSE) data <- rbind(a[pad1:1,], a)
+    if(pad1 > 0 && isDataVector == TRUE) {
+      b <- as.matrix(a[pad1:1], ncol = 1)
+      data <- rbind(b, a)
+    }
     #Padding by repeating first entry
     #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
 
