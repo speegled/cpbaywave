@@ -12,6 +12,8 @@ Imports:
     wavethresh,
     clusterGeneration,
     mvtnorm,
+    grid,
+    ggplot2,
     MASS,
     far,
     utils,
