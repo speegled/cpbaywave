@@ -4,7 +4,7 @@
 \alias{computeProb}
 \title{Compute Probability Vector Elements}
 \usage{
-computeProb(DWTmat, Qvec, useBFIC = FALSE)
+computeProb(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE)
 }
 \arguments{
 \item{DWTmat}{The matrix of discrete wavelet transform of data values.}

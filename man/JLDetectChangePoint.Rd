@@ -5,7 +5,7 @@
 \title{Johnson-Lindendstrauss Dimension Reduction}
 \usage{
 JLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = FALSE,
-  useBFIC = TRUE, setdetail)
+  useBFIC = TRUE, setdetail, showplot = TRUE)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}
