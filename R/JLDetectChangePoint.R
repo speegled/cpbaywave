@@ -8,6 +8,7 @@
 #' @param useGaussian Set to TRUE if you want to use a random Gaussian projection. Default is random matrix of +- 1.
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
+#' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
 #' @export
 #' @examples
 #'\dontrun{
