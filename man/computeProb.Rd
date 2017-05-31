@@ -12,6 +12,8 @@ computeProb(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE)
 \item{Qvec}{The discrete wavelet transform of the idealized time series with shift.}
 
 \item{useBFIC}{set to TRUE to compute Bayes factor information content.}
+
+\item{isDataVector}{set to TRUE for 1-d time series}
 }
 \description{
 This is a helper function for changePointDetect.

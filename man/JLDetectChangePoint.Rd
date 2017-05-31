@@ -17,9 +17,11 @@ JLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = FALSE,
 \item{useBFIC}{Optional argument to use BFIC to decide change point location.}
 
 \item{setdetail}{Optional argument to set the detail level you wish to use. Default is all details.}
+
+\item{showplot}{set to TRUE to see plot of 1-d time series and probability plot.}
 }
 \description{
-Computes a random projection with Bernoulli entries of each element in a time series, then calls detectChangePoint to determine where the
+Computes a random projection with Bernoulli or Gaussian entries of each element in a time series, then calls detectChangePoint to determine where the
 change point occurs. In most cases of real data, the BFIC will be significantly greater than 3; it is an open
 question to determine good values of the BFIC for various types of problems.
 }

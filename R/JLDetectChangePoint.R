@@ -1,6 +1,6 @@
 #' Johnson-Lindendstrauss Dimension Reduction
 #'
-#' Computes a random projection with Bernoulli entries of each element in a time series, then calls detectChangePoint to determine where the
+#' Computes a random projection with Bernoulli or Gaussian entries of each element in a time series, then calls detectChangePoint to determine where the
 #' change point occurs. In most cases of real data, the BFIC will be significantly greater than 3; it is an open
 #' question to determine good values of the BFIC for various types of problems.
 #' @param multiSeries The high dimensional time series. Should be a matrix, with each row being an observation of the time series.
@@ -10,6 +10,7 @@
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
 #' @export
+#' @import stats
 #' @examples
 #'\dontrun{
 #'
@@ -29,7 +30,7 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   #Create random projection
   if(useGaussian) {
-    transMatrix <- matrix(stats::rnorm(fullDim * reducedDim), ncol = reducedDim)
+    transMatrix <- matrix(rnorm(fullDim * reducedDim), ncol = reducedDim)
   } else transMatrix <- 1/sqrt(fullDim) * matrix(sample(c(1,-1), fullDim*reducedDim, replace = TRUE), ncol = reducedDim)
 
   #Reduce Dimensionality of Data

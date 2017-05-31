@@ -8,6 +8,11 @@
 #' @return value The value of the BFIC or maximium probability if useBFIC = FALSE. BFIC greater than 3 is evidence that there is a change in mean.
 #' @return index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 #' @export
+#' @import stats
+#' @import wavethresh
+#' @import utils
+#' @import ggplot2
+#' @import grid
 #' @examples
 #' a <- createTimeSeries() #True change point at time 72
 #' detectChangePoint(a, 0:6, showplot = TRUE)
@@ -88,7 +93,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     pad1 <- nxt - n
     data <- a
     #Padding by extending first entry + some noise.
-    #data <- rbind(matrix(stats::rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
+    #data <- rbind(matrix(rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
 
     #Trying mirror padding. Seems better based on simulations.
     if(pad1 > 0 && isDataVector == FALSE) data <- rbind(a[pad1:1,], a)
@@ -106,21 +111,21 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     n <- nxt
 
     # Get information about wd, could be improved
-    genDWT <- (wavethresh::wd(data[, 1], filter.number = F, family = "DaubExPhase"))  #generic DWT
-    p <- wavethresh::nlevelsWT(genDWT)
+    genDWT <- (wd(data[, 1], filter.number = F, family = "DaubExPhase"))  #generic DWT
+    p <- nlevelsWT(genDWT)
     J <- p
 
     # Compute details of discrete wavelet transform of data by column and store desired details in DWTmat TODO: write
     # wrapper for accessD that pulls out multiple levels and returns a vector of details unlist(sapply(...)) pulls out
     # the desired levels of detail coefficients and combines them in a vector
-    DWTmat <- apply(data, 2, function(x) unlist(sapply(J - setdetail - 1, function(y) wavethresh::accessD(wavethresh::wd(x,
+    DWTmat <- apply(data, 2, function(x) unlist(sapply(J - setdetail - 1, function(y) accessD(wd(x,
         filter.number = F, family = "DaubExPhase"), y))))
 
     # Creating idealized data set and its discrete wavelet transform Have 0's followed by 1's with change point in each
     # possible position
     probvec <- sapply(1:(n - 1), function(x) {
         tauvec <- c(rep(0, x), rep(1, nxt - x))
-        Qvec <- unlist(sapply(J - setdetail - 1, function(y) wavethresh::accessD(wavethresh::wd(tauvec, filter.number = F,
+        Qvec <- unlist(sapply(J - setdetail - 1, function(y) accessD(wd(tauvec, filter.number = F,
             family = "DaubExPhase"), y)))
         computeProb(DWTmat, Qvec, useBFIC, isDataVector)
     })
@@ -138,7 +143,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
 
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
-    indices <- match(utils::head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
+    indices <- match(head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
     if (showplot) {
       BFIC <-  M2 - M1 - 0.5 * wid * log(m)
@@ -146,43 +151,43 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
         plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
         probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
         if(BFIC > 3) {
-        plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
-          ggplot2::geom_point() +
-          ggplot2::geom_smooth(data = plotData[1:indices[1],], mapping = ggplot2::aes(x = x, y = y), method = "loess", se = FALSE) +
-          ggplot2::geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = ggplot2::aes(x = x, y = y), method = "loess", se = FALSE)
-        plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
-          ggplot2::geom_line()
-        grid::grid.newpage()
-        grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
+        plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
+          geom_point() +
+          geom_smooth(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), method = "loess", se = FALSE) +
+          geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), method = "loess", se = FALSE)
+        plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
+          geom_line()
+        grid.newpage()
+        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
         } else {
-          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
-            ggplot2::geom_point() +
-            ggplot2::geom_smooth(method = "loess", se = FALSE)
-          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
-            ggplot2::geom_line()
-          grid::grid.newpage()
-          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
+            geom_point() +
+            geom_smooth(method = "loess", se = FALSE)
+          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
           }
       } else {
         plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
         probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
         if(BFIC > 3) {
-          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
-            ggplot2::geom_point(alpha = .5) +
-            ggplot2::geom_line(data = plotData[1:indices[1],], mapping = ggplot2::aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
-            ggplot2::geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = ggplot2::aes(x = x, y = y), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
-          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
-            ggplot2::geom_line()
-          grid::grid.newpage()
-          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
+            geom_point(alpha = .5) +
+            geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
+            geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
+          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
         } else {
-          plot1 <- ggplot2::ggplot(plotData, ggplot2::aes(x = x, y = y)) +
-            ggplot2::geom_point(alpha = 0.5) +
-            ggplot2::geom_smooth(method = "loess",span = 1.5, se = FALSE)
-          plot2 <- ggplot2::ggplot(probData, ggplot2::aes(x = x, y = probvec)) +
-            ggplot2::geom_line()
-          grid::grid.newpage()
-          grid::grid.draw(rbind(ggplot2::ggplotGrob(plot1), ggplot2::ggplotGrob(plot2), size = "last"))
+          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
+            geom_point(alpha = 0.5) +
+            geom_smooth(method = "loess",span = 1.5, se = FALSE)
+          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
+            geom_line()
+          grid.newpage()
+          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
         }
       }
     }
@@ -191,7 +196,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     # there are?
     probvec[is.nan(probvec)] <- min(probvec)
 
-    indices <- match(utils::head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
+    indices <- match(head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
     return(list(value = value, index = indices))
 }
