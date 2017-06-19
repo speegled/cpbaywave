@@ -85,7 +85,6 @@ bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = T
     warning("Bootstrapping not yet implemented for this case")
     return(1)
   }
-  browser()
   percent <- sum(results$value > 3)/numRepeat/numKeep
   indices <- unlist(results$index)
   alphaIndex <- min(round(1000*(1 - alpha)) ,1000)
@@ -93,7 +92,7 @@ bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = T
   values <- as.data.frame(table(results$index))
   names(values)[1] <- "Index"
   grid::grid.newpage()
-  plot1 <-  ggplot(values, aes(x = Index, y = Freq)) + geom_bar(stat = "identity") +
+  plot1 <-  ggplot(values, aes_string(x = "Index", y = "Freq")) + geom_bar(stat = "identity") +
     geom_abline(slope = 0, intercept = q95, color = "red", linetype = 2)
   grid::grid.draw(plot1)
   sigindices <- table(indices)[table(indices) > q95]
