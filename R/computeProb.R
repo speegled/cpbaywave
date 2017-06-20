@@ -5,6 +5,7 @@
 #' @param Qvec The discrete wavelet transform of the idealized time series with shift.
 #' @param useBFIC set to TRUE to compute Bayes factor information content.
 #' @param isDataVector set to TRUE for 1-d time series
+#' @export
 
 
 computeProb <- function(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE) {
