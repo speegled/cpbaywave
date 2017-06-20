@@ -2,6 +2,7 @@
 
 export(JLDetectChangePoint)
 export(bootJLDetectChangePoint)
+export(computeProb)
 export(createTimeSeries)
 export(detectChangePoint)
 export(metricChangePoint)
