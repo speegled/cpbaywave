@@ -44,19 +44,19 @@
 
 metricChangePoint <- function(multiSeries, distance, useGaussian = TRUE, useBFIC = TRUE, setdetail, reducedDim = 10, useBootstrap = FALSE) {
 
-  if(is.vector(multiSeries)) {
-    warning("Only implemented for multivariate data")
+  if(!is.list(multiSeries)) {
+    warning("multiSeries must be a list")
     return (1)
   }
 
-  if(test_that(is.numeric(distance(multiSeries[1,], multiSeries[2,])), is_true)) {
+  if(test_that(is.numeric(distance(multiSeries[[1]], multiSeries[[2]])), is_true)) {
 
-    if(missing(setdetail)) setdetail <- 0:(floor(log2(nrow(multiSeries) - 1) - 2))
+    if(missing(setdetail)) setdetail <- 0:(floor(log2(length(multiSeries) - 1) - 1))
 
-    N <- nrow(multiSeries)
+    N <- length(multiSeries)
     dists <- matrix(1:N, ncol = N)
     for(i in 1:N) {
-      dists <- rbind(dists, sapply(1:N, function(j) distance(multiSeries[i,], multiSeries[j,])))
+      dists <- rbind(dists, sapply(1:N, function(j) distance(multiSeries[[i]], multiSeries[[j]])))
     }
     dists <- dists[-1,]
     for(i in 1:N) {
