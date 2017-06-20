@@ -1,7 +1,8 @@
 Package: cpbaywave
 Title: Bayesian Wavelet based Change Point Detection
-Version: 0.1.04
-Authors@R: c(person("Darrin", "Speegle", email = "speegled@slu.edu", role = c("aut", "cre")),
+Version: 0.1.05
+Authors@R: c(
+    person("Darrin", "Speegle", email = "speegled@slu.edu", role = c("aut, "cre")),
     person("Steward", "Robert", email = "rstewa12@slu.edu", role = c("aut")))
 Description: This package detects change point locations of the mean in multi-dimensional time series data.  
 Depends: R (>= 3.3.2)
@@ -18,5 +19,6 @@ Imports:
     far,
     utils,
     stats,
-    graphics
+    graphics, 
+    testthat
 RoxygenNote: 6.0.1
