@@ -11,15 +11,12 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     wavethresh,
-    clusterGeneration,
     mvtnorm,
     grid,
     ggplot2,
     MASS,
-    far,
     utils,
     stats,
     graphics, 
-    testthat, 
-    TDA
+    testthat
 RoxygenNote: 6.0.1
