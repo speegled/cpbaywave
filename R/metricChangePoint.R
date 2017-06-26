@@ -34,42 +34,43 @@
 #'
 
 
-
-
-
-
-
-
-
-
 metricChangePoint <- function(multiSeries, distance, useGaussian = TRUE, useBFIC = TRUE, setdetail, reducedDim = 10, useBootstrap = FALSE) {
+  if(is.matrix(multiSeries)) {
+    multiSeries <- lapply(seq_len(nrow(multiSeries)), function(i) multiSeries[i,])
+  }
 
   if(!is.list(multiSeries)) {
-    warning("multiSeries must be a list")
-    return (1)
+    stop("multiSeries must be a list")
   }
 
   if(test_that(is.numeric(distance(multiSeries[[1]], multiSeries[[2]])), is_true)) {
 
     if(missing(setdetail)) setdetail <- 0:(floor(log2(length(multiSeries) - 1) - 1))
 
+    #
+    # Compute pairwise distances and store in matrix dists. TODO: speed this up.
+    #
     N <- length(multiSeries)
-    dists <- matrix(1:N, ncol = N)
-    for(i in 1:N) {
-      dists <- rbind(dists, sapply(1:N, function(j) distance(multiSeries[[i]], multiSeries[[j]])))
+    dists <- matrix(rep(0, N * N), ncol = N)
+    for(i in 1:(N-1)) {
+      for(j in (i + 1):N) {
+        dists[i,j] <- distance(multiSeries[[i]], multiSeries[[j]])
+        dists[j,i] <- dists[i,j]
+      }
     }
-    dists <- dists[-1,]
+    # Take care of odd cases in dists matrix
     for(i in 1:N) {
       for(j in 1:N) {
-        if(dists[i,j] == 0 && i > 1 && i < N) dists[i,j] <- 1/2*(dists[i,j-1] + dists[i,j+1])
+        if(dists[i,j] == 0 && j > 1 && j < N) dists[i,j] <- 1/2*(dists[i,j-1] + dists[i,j+1])
       }
     }
     dists[1,1] <- dists[1,2]
     dists[N,N] <- dists[N,N - 1]
+
     if(!useBootstrap) {
       JLDetectChangePoint(multiSeries = dists, reducedDim = reducedDim, useGaussian = useGaussian, setdetail = setdetail, useBFIC = useBFIC)
     } else {
-      bootJLDetectChangePoint(multiSeries = multiSeries, useGaussian = useGaussian, setdetail = setdetail, useBFIC = useBFIC)
+      bootJLDetectChangePoint(multiSeries = dists, useGaussian = useGaussian, setdetail = setdetail, useBFIC = useBFIC)
     }
 
 
