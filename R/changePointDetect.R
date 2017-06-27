@@ -21,7 +21,7 @@
 #'
 #' a <- createTimeSeries(mu1 = 1, mu2 = 0, sigma = 1, n = 100, tau = 55)
 #' plot(a[,1])
-#' detectChangePoint(a)
+#' detectChangePoint(a) #Hard problem. True change point at t = 55. Not always possible to detect.
 #'
 #' #Time series with no change in mean.
 #' dim=5
@@ -49,7 +49,8 @@
 #' detectChangePoint(series2, useBFIC = TRUE, showplot = TRUE) #True change point at t = 20.
 #'
 #'
-#' #Time series with smooth mean function, no jump
+#' #Time series with smooth mean function, no jump. Illustrates that BFIC unreliable
+#' #when there is a smooth underlying mean function.
 #' dim=3
 #' sig1=diag(dim)
 #' mu1=rep(0,dim)
@@ -65,7 +66,7 @@
 
 
 
-detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, padding = "extend", browse = FALSE) {
+detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, padding = "insertion") {
 
     if(is.vector(a)) a <- as.matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
@@ -82,8 +83,9 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
     nxt <- 2^(ceiling(log2(n)))
     pad1 <- nxt - n
     data <- a
-    if(browse)
-      browser()
+    isPadded <- (pad1 > 0)
+    #if(browse)
+    #  browser()
 
 
     #
@@ -164,7 +166,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
     indices <- match(head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
-    if(padding == "insertion") {
+    if(padding == "insertion" && isPadded) {
       n <- nrow(a)
       indices <- ifelse(order(id)[indices] <= n, order(id)[indices], order(id)[indices - 1]) #Picks the point in unpadded time series that corresponds to change point
       probvec <- probvec[order(id) <= n]
