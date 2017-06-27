@@ -4,7 +4,8 @@
 \alias{detectChangePoint}
 \title{Detect Change Point}
 \usage{
-detectChangePoint(a, setdetail, useBFIC = TRUE, showplot = FALSE)
+detectChangePoint(a, setdetail, useBFIC = TRUE, showplot = FALSE,
+  padding = "insertion")
 }
 \arguments{
 \item{a}{A vector or matrix representing time series. If matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.}
@@ -14,14 +15,17 @@ detectChangePoint(a, setdetail, useBFIC = TRUE, showplot = FALSE)
 \item{useBFIC}{Set to true to choose the change point with highest BFIC.}
 
 \item{showplot}{Set to true to see a plot of the probabilities of a change point at each time, together with a scatterplot of the first dimension versus time.}
+
+\item{padding}{One of mirror, extension or insertion. Default is insertion.}
 }
 \value{
 value The value of the BFIC or maximium probability if useBFIC = FALSE. BFIC greater than 3 is evidence that there is a change in mean.
 
-index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
+index A vector giving the 3-5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 }
 \description{
-Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean.
+Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean. Returns the
+3-5 most likely change point locations.
 }
 \examples{
 a <- createTimeSeries() #True change point at time 72
@@ -29,7 +33,7 @@ detectChangePoint(a, 0:6, showplot = TRUE)
 
 a <- createTimeSeries(mu1 = 1, mu2 = 0, sigma = 1, n = 100, tau = 55)
 plot(a[,1])
-detectChangePoint(a)
+detectChangePoint(a) #Hard problem. True change point at t = 55. Not always possible to detect.
 
 #Time series with no change in mean.
 dim=5
@@ -40,8 +44,7 @@ n=128
 tau=70
 series=createTimeSeries(mu1, mu2, sig1, n, tau)
 plot(series[,1])
-dtl=c(0,1,2,3,4,5,6)
-detectChangePoint(series,dtl)
+detectChangePoint(series)
 #value less than 3 indicates no change model is favored
 
 
@@ -49,20 +52,17 @@ detectChangePoint(series,dtl)
 dim=10
 sig1=diag(dim)
 mu1=rep(0,dim)
-mu2=rep(1.5,dim)
-n=90
+mu2=rep(1,dim)
+n=90  #Algorithm doesn't work as well when n not power of 2.
 tau=20
 series1=createTimeSeries(mu1, mu2, sig1, n, tau)
-sn=sin(2*pi*1:n/n)
+sn=sin(1*pi*1:n/n) #Compare with sn = sin(3*pi*1:n/n), which is too hard for algorithm
 series2=sn+series1
-plot(series2[,2])
-dtl=c(0,1,2,3,4,5)
-detectChangePoint(series2,dtl, useBFIC = TRUE)
-#value greater than 3 indicates change model is favored
-detectChangePoint(series2,dtl)
+detectChangePoint(series2, useBFIC = TRUE, showplot = TRUE) #True change point at t = 20.
 
 
-#Time series with smooth mean function, no jump
+#Time series with smooth mean function, no jump. Illustrates that BFIC unreliable
+#when there is a smooth underlying mean function.
 dim=3
 sig1=diag(dim)
 mu1=rep(0,dim)
@@ -73,7 +73,6 @@ series1=createTimeSeries(mu1, mu2, sig1, n, tau)
 sn=sin(2*pi*1:n/n)
 series2=sn+series1
 plot(series2[,2])
-dtl=c(0,1,2,3,4,5)
-detectChangePoint(series2,dtl)
+detectChangePoint(series2, showplot = TRUE)
 #value less than 3 indicates no change-model is favored
 }
