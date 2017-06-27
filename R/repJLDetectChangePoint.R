@@ -77,21 +77,26 @@ repJLDetectChangePoint <-
       warning("numKeep reset to 5.")
     }
 
-    sd <- numeric(ncol(multiSeries))
+
+    #
+    # Begin estimate of standard deviation. Algorithm doesn't work well with too little noise,
+    # so we add noise later based on this computation.
+    #
+    colSd <- numeric(ncol(multiSeries))
 
     for (i in 1:ncol(multiSeries)) {
       tempdata <- data.frame(x = 1:nrow(multiSeries), y = multiSeries[, i])
       fit.loess <- loess(y ~ x, data = tempdata)
-      sd[i] <- sd(fit.loess$residuals)
+      colSd[i] <- sd(fit.loess$residuals)
     }
 
     results <- data.frame(value = 0, index = rep(0, numKeep))
     for (i in 1:numRepeat) {
       tempdata <- multiSeries
       tempdata <-
-        tempdata + matrix(rnorm(nrow(tempdata) * ncol(tempdata), 0, sd),
+        tempdata + matrix(rnorm(nrow(tempdata) * ncol(tempdata), 0, colSd),
                           ncol = ncol(tempdata),
-                          byrow = TRUE)
+                          byrow = TRUE)               #adds noise computed above
       scoreIndex1 <-
         cpbaywave::JLDetectChangePoint(
           multiSeries,
