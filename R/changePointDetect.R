@@ -1,12 +1,14 @@
 #' Detect Change Point
 #'
-#' Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean.
+#' Applies Bayesian-wavelet technique to determine whether a multi-dimensional time series has change point in the mean. Returns the
+#' 3-5 most likely change point locations.
 #' @param a A vector or matrix representing time series. If matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.
 #' @param setdetail The detail levels of the wavelet transform to use to detect change in mean. Default is all levels.
 #' @param useBFIC Set to true to choose the change point with highest BFIC.
 #' @param showplot Set to true to see a plot of the probabilities of a change point at each time, together with a scatterplot of the first dimension versus time.
+#' @param padding One of mirror, extension or insertion. Default is insertion.
 #' @return value The value of the BFIC or maximium probability if useBFIC = FALSE. BFIC greater than 3 is evidence that there is a change in mean.
-#' @return index A vector giving the 5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
+#' @return index A vector giving the 3-5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 #' @export
 #' @import stats
 #' @import wavethresh
@@ -30,8 +32,7 @@
 #' tau=70
 #' series=createTimeSeries(mu1, mu2, sig1, n, tau)
 #' plot(series[,1])
-#' dtl=c(0,1,2,3,4,5,6)
-#' detectChangePoint(series,dtl)
+#' detectChangePoint(series)
 #' #value less than 3 indicates no change model is favored
 #'
 #'
@@ -39,17 +40,13 @@
 #' dim=10
 #' sig1=diag(dim)
 #' mu1=rep(0,dim)
-#' mu2=rep(1.5,dim)
-#' n=90
+#' mu2=rep(1,dim)
+#' n=90  #Algorithm doesn't work as well when n not power of 2.
 #' tau=20
 #' series1=createTimeSeries(mu1, mu2, sig1, n, tau)
-#' sn=sin(2*pi*1:n/n)
+#' sn=sin(1*pi*1:n/n) #Compare with sn = sin(3*pi*1:n/n), which is too hard for algorithm
 #' series2=sn+series1
-#' plot(series2[,2])
-#' dtl=c(0,1,2,3,4,5)
-#' detectChangePoint(series2,dtl, useBFIC = TRUE)
-#' #value greater than 3 indicates change model is favored
-#' detectChangePoint(series2,dtl)
+#' detectChangePoint(series2, useBFIC = TRUE, showplot = TRUE) #True change point at t = 20.
 #'
 #'
 #' #Time series with smooth mean function, no jump
@@ -63,15 +60,14 @@
 #' sn=sin(2*pi*1:n/n)
 #' series2=sn+series1
 #' plot(series2[,2])
-#' dtl=c(0,1,2,3,4,5)
-#' detectChangePoint(series2,dtl)
+#' detectChangePoint(series2, showplot = TRUE)
 #' #value less than 3 indicates no change-model is favored
 
 
 
-detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
+detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, padding = "extend", browse = FALSE) {
 
-    if(is.vector(a)) a <- matrix(a,ncol = 1)
+    if(is.vector(a)) a <- as.matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
 
     if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
@@ -82,30 +78,53 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
 
     if(wid > 50) warning("This computation is likely numerically unstable. Consider JLdetectChangePoint instead.")
 
-    #If vector, create matrix with both columns the same. This is hack that should be fixed.
-    if(wid == 1) {
-      isDataVector <- TRUE
-    #a <- matrix(c(a,a + runif(n, -.01,.01)),ncol = 2)
-    #wid <- 2
-    }
     # pad with normal data at top of a, centered at first element of time series
     nxt <- 2^(ceiling(log2(n)))
     pad1 <- nxt - n
     data <- a
-    #Padding by extending first entry + some noise.
-    #data <- rbind(matrix(rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
+    if(browse)
+      browser()
 
-    #Trying mirror padding. Seems better based on simulations.
-    if(pad1 > 0 && isDataVector == FALSE) data <- rbind(a[pad1:1,], a)
-    if(pad1 > 0 && isDataVector == TRUE) {
-      b <- as.matrix(a[pad1:1], ncol = 1)
-      data <- rbind(b, a)
+
+    #
+    # BEGIN Lots of different kinds of padding. Insertion works best on simulations.
+    #
+    #Padding by extending estimated first entry + some noise.
+    if(padding == "extend" && pad1 > 0) {
+    xvals <- 1:10
+    padVals <- matrix(rep(0, pad1 * wid), ncol = wid)
+    for(i in 1:wid) {
+      lm.model <- lm(a[1:10,i]~xvals)
+      padVals[,i] <- predict(lm.model, newdata = data.frame(xvals = (-1 * pad1 + 1):0)) + rnorm(pad1, 0, mean(sd(lm.model$residuals), sd(a[1:10,i])))
     }
-    #Padding by repeating first entry
-    #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
-
-    #Padding by repeating first entry
-    #if(pad1 > 0) data <- rbind(t(replicate(pad1, a[1,])),a)
+    data <- rbind(padVals, a)
+    }
+    #data <- rbind(matrix(rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
+    if(padding == "mirror" && pad1 > 0)
+      data <- rbind(a[pad1:1,], a)
+    #Insertion padding. Inserts similar looking data between randomly chosen points.
+    if(padding == "insertion" && pad1 > 0) {
+      data <- matrix(rep(0, nxt * wid), ncol = wid)
+      insertAfter <- sample(n, pad1)
+      for(Cols in 1:wid) {
+        valueToInsert <- numeric(0)
+        for(ind in insertAfter) {
+          minIndex <- max(1,ind-5)
+          maxIndex <- min(n,ind+5)
+          planck <- sd(a[minIndex:maxIndex,Cols])
+          meanVal <- weighted.mean(a[minIndex:maxIndex, Cols], w = 5 - abs(ind - minIndex:maxIndex))
+          valueToInsert <- c(valueToInsert, meanVal + rnorm(1, 0,planck))
+        }
+        #Ninja trick to insert new values into vector.
+        id <- c(seq_along(a[,Cols]), insertAfter + 0.5)
+        vals <- c(a[,Cols], valueToInsert)
+        data[,Cols] <- vals[order(id)]
+      }
+      pad1 <- 0 #Treat the signal as original; use insertAfter to recalculate indices later
+    }
+    #
+    # END different types of padding.
+    #
 
     # re-establish length
     n <- nxt
@@ -145,58 +164,43 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE) {
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
     indices <- match(head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
+    if(padding == "insertion") {
+      n <- nrow(a)
+      indices <- ifelse(order(id)[indices] <= n, order(id)[indices], order(id)[indices - 1]) #Picks the point in unpadded time series that corresponds to change point
+      probvec <- probvec[order(id) <= n]
+      data <- a
+    }
+
+
     if (showplot) {
       BFIC <-  M2 - M1 - 0.5 * wid * log(m)
-      if(isDataVector) {
-        plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
-        probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
-        if(BFIC > 3) {
+      plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
+      probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
+      if(BFIC > 3) {
         plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-          geom_point() +
-          geom_smooth(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), method = "loess", se = FALSE) +
-          geom_smooth(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), method = "loess", se = FALSE)
+          geom_point(alpha = .5) +
+          geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
+          geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
         plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
           geom_line()
         grid.newpage()
         grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
-        } else {
-          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-            geom_point() +
-            geom_smooth(method = "loess", se = FALSE)
-          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
-          }
       } else {
-        plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
-        probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
-        if(BFIC > 3) {
-          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-            geom_point(alpha = .5) +
-            geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
-            geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
-          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
-        } else {
-          plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-            geom_point(alpha = 0.5) +
-            geom_smooth(method = "loess",span = 1.5, se = FALSE)
-          plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
-            geom_line()
-          grid.newpage()
-          grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
-        }
+        plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
+          geom_point(alpha = 0.5) +
+          geom_smooth(method = "loess",span = 1.5, se = FALSE)
+        plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
+          geom_line()
+        grid.newpage()
+        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
       }
     }
 
-    # Remove nan and return the 5 most likely change points There shouldn't be nan, maybe rather exit with error if
+
+    # Remove nan and return the 3-5 most likely change points There shouldn't be nan, maybe rather exit with error if
     # there are?
     probvec[is.nan(probvec)] <- min(probvec)
 
-    indices <- match(head(sort(probvec[(pad1 + 1):n], decreasing = TRUE), 5), probvec[(pad1 + 1):n])
 
-    return(list(value = value, index = indices))
+    return(list(value = value, index = unique(indices)))
 }
