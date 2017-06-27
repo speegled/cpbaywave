@@ -18,5 +18,6 @@ Imports:
     utils,
     stats,
     graphics, 
-    testthat
+    testthat,
+    TDA
 RoxygenNote: 6.0.1
