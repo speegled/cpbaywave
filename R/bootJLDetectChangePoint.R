@@ -33,14 +33,16 @@
 
 bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = TRUE, setdetail, useBFIC = TRUE, numRepeat = 100, numKeep = 2, alpha = .05, useJL = TRUE) {
 
-  if(ncol(multiSeries) <= reducedDim && useJL) {
+  if(ncol(multiSeries) < reducedDim && useJL) {
     warning("reduced dimension greater than original, useJL set to FALSE")
     useJL <- FALSE
   }
 
+  if(is.na(IsPowerOfTwo(nrow(multiSeries))))
+    warning("Algorithm designed for time series length a power of 2.")
+
   if(ncol(multiSeries) == 1) {
-    warning("Algorithm Not Yet Implemented For This Case")
-    return(1)
+    stop("Algorithm Not Yet Implemented For 1-d Case")
   }
 
   if(numRepeat > 200) {
@@ -54,41 +56,44 @@ bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = T
     warning("numKeep reset to 5.")
   }
 
-
-
   if(useJL) {
-  N <- nrow(multiSeries)
-  M <- ncol(multiSeries)
-  results <- data.frame(value = 0, index = rep(0, numKeep))
-  for(j in 1:numRepeat) {
-    nTrue <- sort(sample(N,N,TRUE))
-    a <- multiSeries
-    a[1,] <- multiSeries[nTrue[1],]
-    for(i in 2:N) {
-      if(nTrue[i] == nTrue[i-1]) {
-        minIndex <- max(1,nTrue[i]-5)
-        maxIndex <- min(N,nTrue[i]+5)
-        planck <- sd(multiSeries[minIndex:maxIndex,])
-        a[i,] <- multiSeries[nTrue[i],] + rnorm(M,0,planck)
-      } else {
-        a[i,] <- multiSeries[nTrue[i],]
+    N <- nrow(multiSeries)
+    M <- ncol(multiSeries)
+    results <- data.frame(value = 0, index = rep(0, numKeep))
+    for(j in 1:numRepeat) {
+      nTrue <- sort(sample(N,N,TRUE))   #Bootsrap resample of time coordinates
+      a <- multiSeries
+      a[1,] <- multiSeries[nTrue[1],]
+      for(i in 2:N) {
+        #
+        # If we repeated a time sample, then we interpolate a new value.
+        #
+        if(nTrue[i] == nTrue[i-1]) {
+          minIndex <- max(1,nTrue[i]-5)
+          maxIndex <- min(N,nTrue[i]+5)
+          planck <- sd(multiSeries[minIndex:maxIndex,])
+          a[i,] <- multiSeries[nTrue[i],] + rnorm(M,0,planck)
+        } else {
+          a[i,] <- multiSeries[nTrue[i],]
+        }
       }
+      scoreIndex1 <- cpbaywave::JLDetectChangePoint(as.matrix(a, ncol = ncol(multiSeries)), reducedDim = reducedDim, useGaussian= useGaussian, setdetail = setdetail, useBFIC = useBFIC, showplot = FALSE)
+      scoreIndex <- data.frame(value = rep(scoreIndex1$value, numKeep), index = nTrue[scoreIndex1$index[1:numKeep]])
+      results <- rbind(results, scoreIndex)
     }
-    scoreIndex1 <- cpbaywave::JLDetectChangePoint(as.matrix(a, ncol = ncol(multiSeries)), reducedDim = reducedDim, useGaussian= useGaussian, setdetail = setdetail, useBFIC = useBFIC, showplot = FALSE)
-    scoreIndex <- data.frame(value = rep(scoreIndex1$value, numKeep), index = nTrue[scoreIndex1$index[1:numKeep]])
-    results <- rbind(results, scoreIndex)
-  }
-  results <- results[-numKeep:-1,]
+    results <- results[-numKeep:-1,]
   }
 
   if(!useJL) {
-    warning("Bootstrapping not yet implemented for this case")
-    return(1)
+    stop("Bootstrapping only implemented via JL so far.")
   }
-  percent <- sum(results$value > 3)/numRepeat/numKeep
+
+  percent <- sum(results$value > 3)/numRepeat/numKeep #Percent of times BFIC > 3
   indices <- unlist(results$index)
   alphaIndex <- min(round(1000*(1 - alpha)) ,1000)
+  #Estimate the significance cut-off. TODO: make this a table lookup.
   q95 <- sort(replicate(1000, max(table(replicate(numRepeat, sample(sample(N,N/2),numKeep))))))[alphaIndex]
+
   values <- as.data.frame(table(results$index))
   names(values)[1] <- "Index"
   grid::grid.newpage()
