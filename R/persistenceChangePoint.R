@@ -53,6 +53,5 @@ persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasse
                                              maxscale = maxScale,
                                              library = "GUDHI",
                                              printProgress = FALSE)$diagram)
-  browser()
   metricChangePoint(Diags, wasserstein, useBootstrap = useBootstrap)
 }
