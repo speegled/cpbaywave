@@ -1,0 +1,182 @@
+---
+title: "Change Point Detection"
+author: "Darrin Speegle"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This package implements wavelet based change-point detection of various types of data.
+
+## Real Valued Data
+
+### One-dimensional data
+
+The easiest example is one-dimensional time series. Let's assume that the data is normal with mean 0 for the first 50 time steps, then it is normal with mean 1 for the next 74. We also assume the standard deviation is 1 in each case.
+
+```{r}
+library(cpbaywave)
+set.seed(732017) #Created July 3, 2017
+timeData <- c(rnorm(50,0,1), rnorm(78,1,1))
+plot(timeData)
+```
+
+To estimate the change point, use
+```{r}
+detectChangePoint(timeData)
+```
+
+The 5 most likely change point locations are given, together with the BFIC value. A BFIC value bigger than 3 is evidence of a change in mean, while a BFIC less than 3 is not. The computaion of BFIC depends on the underlying time series being piecewise constant with normal error, so it is not as useful as it might at first seem. In this case, the algorithm gives the exact answer as the third most likely change point, while 64 is not correct, but looking at the graph it is clear why the algorithm liked that possibility. 
+
+If you want to see the plot of the points, use
+```{r}
+detectChangePoint(timeData, showplot = TRUE)
+```
+
+This gives the original data, with fitted lines broken at the change point. It also shows the probability vector. If the probability vector has a sharp cusp at the change point, then it is good qualitative evidence of a change. 
+
+```{r}
+timeData <- c(rnorm(50,0,1), rnorm(78,5,1))
+plot(timeData)
+```
+
+```{r}
+detectChangePoint(timeData, showplot = TRUE)
+```
+
+Wavelet transforms are naturally implemented when the length of the time series is a power of 2. When it isn't, then the time series needs to be padded to be of length a power of 2. Several types of padding are implemented, and insertion padding seems to work the best in the cases I have tested. I don't have a theoretical justification for this, so feel free to experiment with the other paddings (mirror and repeat). Insertion padding picks random points in the time series to insert a single point behind, and interpolates a guess for the time series value at that point (with noise). Here is a comparison about how they work:
+
+```{r}
+timeData <- c(rnorm(50,0,1), rnorm(50,1,1))
+detectChangePoint(timeData)
+detectChangePoint(timeData, padding = "extend")
+detectChangePoint(timeData, padding = "mirror")
+```
+
+Sometimes setting the detail level can tease out results that leaving it as the default will not see. However, we don't have any theoretical justification for this, and the current recommendation is to leave the detail level as default. Feel free to experiment.
+
+### Small dimensional time series
+For time series up to dimension about 50, the algorithm works just fine. If you choose to plot the outcome, the plot is of the first dimension of the multi-dimensional time series. A future project is to find a dimension that encapsulates the change and plot that, which would be especially interesting in high dimensional time series. 
+
+The function `createTimeSeries` creates a time series. With no arguments, it creates a 5-d time series of length 128 with mean 0 and 1 with a change point at $t = 72$,  and normal error with identity covariance matrix.
+
+```{r}
+timeData <- createTimeSeries()
+detectChangePoint(timeData)
+```
+
+### High dimensional data
+
+When the data is bigger than about 50 dimensional, then the wavelet algorithm becomes numerically unstable. One way to get around this is to use `JLDetectChangePoint`. This performs Johnson-Lindenstrauss dimension reduction on the time series so that the dimension is less than 50, and then performs the regular wavelet based analysis. For our purposes, we are just multiplying by a random Gaussian matrix for JL dimension reduction. The results are usually quite good, even when reducing dimension more than would be guaranteed by the theory. 
+
+```{r}
+mu1 <- rep(1, 500)
+mu2 <- rep(0, 500)
+timeData <- createTimeSeries(mu1 = mu1, mu2 = mu2)
+JLDetectChangePoint(timeData)
+```
+
+However, some problems are challenging.
+
+```{r}
+mu1 <- c(rep(1, 100), rep(0, 400))
+timeData <- createTimeSeries(mu1, mu2)
+JLDetectChangePoint(timeData)
+```
+
+In this case, JL often gets the right answer, but not always. One thing that you can do is repeat the JL change point detection algorithm multiple times and plot the results.
+
+```{r}
+res <- repJLDetectChangePoint(timeData)
+```
+
+This gives, again, qualitative information about whether there is a change point. You would like to see a spike around a single point, like we did in this instance. However, if there is not a change point, there is often a time that seems the most likely to be a change point, and that one will show up more often than the others. Here is what the plot looks like when there is no change point.
+
+```{r}
+mu1 <- rep(0, 500)
+timeData <- createTimeSeries(mu1, mu2)
+res <- repJLDetectChangePoint(timeData)
+```
+
+This is a pretty typical plot when there is no change. Note that times near the beginning or end are overrepresented (the red dashed line gives the maximum that would be expected at the 95% confidence level if the change points are chosen randomly). I have an idea that one can adjust for this using priors, but it is not currently implemented (and the theory not worked out, either). For this reason, I do not recommend this technique if you are looking for change points in the first 8 or last 8 (or so) time elements. 
+
+There is also a type of bootstrap that is available. Again, this is because BFIC can be unreliable in some instances. The idea is that we randomly sample (with repetition) from the time series, and if there are repeats, we estimate a new time series value at that point. Let's see what we get when there is and isn't a change.
+
+```{r}
+bootJLDetectChangePoint(timeData) #No change
+mu1 <- c(rep(1, 100), rep(0, 400))
+timeData <- createTimeSeries(mu1, mu2)
+bootJLDetectChangePoint(timeData) #Change in the first 100 dimensions. No change in the other 400.
+
+```
+
+This is modest qualitative evidence of a change point. Again, we are looking for a nice peak around a certain value that is above the dashed line, with nearby points ideally also above the line. Here is an example of strong qualitative evidence:
+
+```{r}
+mu1 <- rep(1, 500)
+timeData <- createTimeSeries(mu1, mu2)
+bootJLDetectChangePoint(timeData)
+```
+
+## Time series in metric spaces
+
+Suppose you have a sequence of observations $\{x_n\}_{n=1}^\infty$ that live in a metric space $(X, d)$. (A metric space is a set $X$ together with a distance function $d$, such that there is a nonnegative distance defined between any two points in the space $X$.) The current algorithm computes the distance matrix 
+\[
+\bigl(d(x_i, x_j) \bigr)_{i,j =1}^n
+\]
+and uses that is input to a Johnson-Lindenstrauss change point algorithm (after getting rid of the 0's on the diagonal). The BFIC is definitely not useful in this context, because the matrix we get is singular. 
+
+Here is an example, where we are thinking of $X = \R^N$ and the distance is the $\ell_1$ distance, i.e. 
+\[
+d(x,y) = \sum_{i=1}^N |x_i - y_i
+\]
+Note that in this case, I am converting the time series into a distance matrix and using that to detect a change point. In this case, of course, we could have just used the methods outlined above, but later it won't be so clear how to do that.
+
+```{r}
+mu1 <- c(rep(1,100), rep(0, 400))
+timeData <- createTimeSeries(mu1, mu2)
+myDistance <- function(x,y) {
+  abs(sum(x - y))
+}
+metricChangePoint(timeData, distance = myDistance)
+```
+
+In this case, the metric space version works *much* better than the regular version. Let's compare:
+
+```{r}
+mu1 <- c(rep(1,50), rep(0, 450))
+timeData <- createTimeSeries(mu1, mu2) 
+metricChangePoint(timeData, myDistance)
+JLDetectChangePoint(timeData)
+```
+
+## Persistence
+
+Even though the metric space version works really well in some cases on real data (see above), my motivation for writing that function was to be able to detect change points in sequences of persistence diagrams. What is persistent homology? Intuitavely, a homological feature is persistent if it appears at many different scales. 0-dimensional features correspond to clusters, and 1-dimensional features correspond to loops. So, in some sense, 1-dimensional persistent homology is a next logical refinement of clustering. I have will been being giving a talk at useR 2017 on this, and my slides are ([not yet here](https://github.com/speegled/useRTalk)). This gives a basic intro to Rips filtration in the special case of data living on the plane. Maybe it will be useful to you.  
+
+We can find the following types of change points in sequences of data. Here's an easy example. We have one circle for a while, then there are two circles.  Change point is at $t = 34$. `maxDimension` is the largest dimensional homological feature you are looking for. `maxScale` is the largest diameter in your Rips filtration; a safe bet is to use something on the order of the largest distance between any two points. 
+
+```{r}
+library(TDA)
+Circles <- lapply(1:34, function(x) {
+  Circle1 <- circleUnif(60, r = 2) + rnorm(120,0,.15);})
+Circles2 <- lapply(1:30, function(x) {
+  Circle1 <- circleUnif(60, r = 2) + rnorm(120,0,.15);
+  Circle2 <- circleUnif(60, r = 1) + 4 + rnorm(120,0,.15);
+  rbind(Circle1, Circle2);})
+myCircles <- c(Circles, Circles2)
+persistenceChangePoint(myCircles, maxDimension = 1, maxScale = 4)
+```
+
+We can also bootstrap:
+```{r}
+persistenceChangePoint(myCircles, maxDimension = 1, maxScale = 4, useBootstrap = TRUE)
+```
+
+I like to use both the bootstrap and the no bootstrap and see whether they give consistent results. We are looking for a good cusp on the probvec that corresponds to a centered peak on the bootstrap. 
+
+
+
