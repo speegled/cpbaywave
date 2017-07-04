@@ -103,7 +103,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
     }
     #data <- rbind(matrix(rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
     if(padding == "mirror" && pad1 > 0)
-      data <- rbind(a[pad1:1,], a)
+      data <- rbind(as.matrix(a[pad1:1,], ncol = wid), a)
     #Insertion padding. Inserts similar looking data between randomly chosen points.
     if(padding == "insertion" && pad1 > 0) {
       data <- matrix(rep(0, nxt * wid), ncol = wid)
