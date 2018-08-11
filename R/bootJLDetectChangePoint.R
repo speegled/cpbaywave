@@ -13,6 +13,7 @@
 #' @param numKeep The number of indices that are considered significant at each iteration.
 #' @param alpha The significance level of the bootstrap.
 #' @param useJL Use Johnson-Lindenstrauss dimension reduction. Not currently implemented for useJL = FALSE.
+#' @param rotate_xaxis set to TRUE if you wish to rotate the values on the x-axis
 #' @return List with values
 #' \item{prop}{The proportion of times the BFIC of the bootstrapped time series showed significance.}
 #' \item{indices}{A table of indices that were in the numKeep most likely change points at least once, together with the number of times that they occured.}
@@ -31,7 +32,16 @@
 #'
 
 
-bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = TRUE, setdetail, useBFIC = TRUE, numRepeat = 100, numKeep = 2, alpha = .05, useJL = TRUE) {
+bootJLDetectChangePoint <- function(multiSeries,
+                                    reducedDim = 5,
+                                    useGaussian = TRUE,
+                                    setdetail,
+                                    useBFIC = TRUE,
+                                    numRepeat = 100,
+                                    numKeep = 2,
+                                    alpha = .05,
+                                    useJL = TRUE,
+                                    rotate_xaxis = FALSE) {
 
   if(ncol(multiSeries) < reducedDim && useJL) {
     warning("reduced dimension greater than original, useJL set to FALSE")
@@ -99,7 +109,7 @@ bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = T
   grid::grid.newpage()
   plot1 <-  ggplot(values, aes_string(x = "Index", y = "Freq")) + geom_bar(stat = "identity") +
     geom_abline(slope = 0, intercept = q95, color = "red", linetype = 2)
-  if(length(values$Index) > 10)
+  if(rotate_xaxis)
     plot1 <- plot1 + theme(axis.text.x = element_text(angle = 90, hjust = 1))
   grid::grid.draw(plot1)
   sigindices <- table(indices)[table(indices) > q95]
