@@ -13,7 +13,7 @@
 #' @param numKeep The number of indices that are considered significant at each iteration.
 #' @param alpha The significance level of the bootstrap.
 #' @param useJL Use Johnson-Lindenstrauss dimension reduction. Not currently implemented for useJL = FALSE.
-#' @param rotate_xaxis set to TRUE if you wish to rotate the values on the x-axis
+#' @param rotate_xaxis set to TRUE if you wish to rotate the values on the x-axis; will not print out all values
 #' @return List with values
 #' \item{prop}{The proportion of times the BFIC of the bootstrapped time series showed significance.}
 #' \item{indices}{A table of indices that were in the numKeep most likely change points at least once, together with the number of times that they occured.}
@@ -107,6 +107,8 @@ bootJLDetectChangePoint <- function(multiSeries,
   values <- as.data.frame(table(results$index))
   names(values)[1] <- "Index"
   grid::grid.newpage()
+  if(rotate_xaxis)
+    values$Index <- as.integer(as.character(values$Index))
   plot1 <-  ggplot(values, aes_string(x = "Index", y = "Freq")) + geom_bar(stat = "identity") +
     geom_abline(slope = 0, intercept = q95, color = "red", linetype = 2)
   if(rotate_xaxis)
