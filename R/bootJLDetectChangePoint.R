@@ -99,6 +99,8 @@ bootJLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = T
   grid::grid.newpage()
   plot1 <-  ggplot(values, aes_string(x = "Index", y = "Freq")) + geom_bar(stat = "identity") +
     geom_abline(slope = 0, intercept = q95, color = "red", linetype = 2)
+  if(length(values$Index) > 10)
+    plot1 <- plot1 + theme(axis.text.x = element_text(angle = 90, hjust = 1))
   grid::grid.draw(plot1)
   sigindices <- table(indices)[table(indices) > q95]
   return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95))
