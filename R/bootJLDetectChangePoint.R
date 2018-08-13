@@ -14,6 +14,7 @@
 #' @param alpha The significance level of the bootstrap.
 #' @param useJL Use Johnson-Lindenstrauss dimension reduction. Not currently implemented for useJL = FALSE.
 #' @param rotate_xaxis set to TRUE if you wish to rotate the values on the x-axis; will not print out all values
+#' @param returnPlot set to TRUE if you wish for the plot to be returned.
 #' @return List with values
 #' \item{prop}{The proportion of times the BFIC of the bootstrapped time series showed significance.}
 #' \item{indices}{A table of indices that were in the numKeep most likely change points at least once, together with the number of times that they occured.}
@@ -41,7 +42,8 @@ bootJLDetectChangePoint <- function(multiSeries,
                                     numKeep = 2,
                                     alpha = .05,
                                     useJL = TRUE,
-                                    rotate_xaxis = FALSE) {
+                                    rotate_xaxis = FALSE,
+                                    returnPlot = FALSE) {
 
   if(ncol(multiSeries) < reducedDim && useJL) {
     warning("reduced dimension greater than original, useJL set to FALSE")
@@ -115,6 +117,8 @@ bootJLDetectChangePoint <- function(multiSeries,
     plot1 <- plot1 + theme(axis.text.x = element_text(angle = 90, hjust = 1))
   grid::grid.draw(plot1)
   sigindices <- table(indices)[table(indices) > q95]
+  if(returnPlot)
+    return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95, plot = plot1))
   return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95))
 
 }
