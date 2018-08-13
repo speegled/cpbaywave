@@ -108,17 +108,20 @@ bootJLDetectChangePoint <- function(multiSeries,
 
   values <- as.data.frame(table(results$index))
   names(values)[1] <- "Index"
-  grid::grid.newpage()
+
   if(rotate_xaxis)
     values$Index <- as.integer(as.character(values$Index))
   plot1 <-  ggplot(values, aes_string(x = "Index", y = "Freq")) + geom_bar(stat = "identity") +
     geom_abline(slope = 0, intercept = q95, color = "red", linetype = 2)
   if(rotate_xaxis)
     plot1 <- plot1 + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  grid::grid.draw(plot1)
   sigindices <- table(indices)[table(indices) > q95]
   if(returnPlot)
     return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95, plot = plot1))
-  return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95))
+  if(!returnPlot) {
+    grid::grid.newpage()
+    grid::grid.draw(plot1)
+    return(list(prop = percent, indices = table(indices), sigindices = sigindices, q95 = q95))
+  }
 
 }
