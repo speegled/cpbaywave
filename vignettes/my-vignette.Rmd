@@ -17,7 +17,7 @@ This package implements wavelet based change-point detection of various types of
 
 The easiest example is one-dimensional time series. Let's assume that the data is normal with mean 0 for the first 50 time steps, then it is normal with mean 1 for the next 74. We also assume the standard deviation is 1 in each case.
 
-```{r}
+```{r, warning = FALSE}
 library(cpbaywave)
 set.seed(732017) #Created July 3, 2017
 timeData <- c(rnorm(50,0,1), rnorm(78,1,1))
@@ -38,18 +38,16 @@ detectChangePoint(timeData, showplot = TRUE)
 
 This gives the original data, with fitted lines broken at the change point. It also shows the probability vector. If the probability vector has a sharp cusp at the change point, then it is good qualitative evidence of a change. 
 
-```{r}
+```{r, fig.show="hold"}
 timeData <- c(rnorm(50,0,1), rnorm(78,5,1))
 plot(timeData)
-```
-
-```{r}
 detectChangePoint(timeData, showplot = TRUE)
 ```
 
+
 Wavelet transforms are naturally implemented when the length of the time series is a power of 2. When it isn't, then the time series needs to be padded to be of length a power of 2. Several types of padding are implemented, and insertion padding seems to work the best in the cases I have tested. I don't have a theoretical justification for this, so feel free to experiment with the other paddings (mirror and repeat). Insertion padding picks random points in the time series to insert a single point behind, and interpolates a guess for the time series value at that point (with noise). Here is a comparison about how they work:
 
-```{r}
+```{r, fig.show="hold"}
 timeData <- c(rnorm(50,0,1), rnorm(50,1,1))
 detectChangePoint(timeData)
 detectChangePoint(timeData, padding = "extend")
@@ -159,7 +157,7 @@ Even though the metric space version works really well in some cases on real dat
 
 We can find the following types of change points in sequences of data. Here's an easy example. We have one circle for a while, then there are two circles.  Change point is at $t = 34$. `maxDimension` is the largest dimensional homological feature you are looking for. `maxScale` is the largest diameter in your Rips filtration; a safe bet is to use something on the order of the largest distance between any two points. 
 
-```{r}
+```{r, warning=FALSE}
 library(TDA)
 Circles <- lapply(1:34, function(x) {
   Circle1 <- circleUnif(60, r = 2) + rnorm(120,0,.15);})
