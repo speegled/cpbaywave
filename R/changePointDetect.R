@@ -154,7 +154,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
 
 
 
-    # If M1 > 3, good evidence of change point
+    # If M1 > 3, good evidence of change point -
     M2 = max(probvec)
     m <- nrow(DWTmat)
     t1 = gamma(m/2 + 0.5)
