@@ -1,7 +1,7 @@
 #' Bootstrap Change Point Detection with Johnson-Lindenstrauss dimension reduction
 #'
 #' Bootstraps list of indices at which change point may have occured in a multi-dimensional time series with normal noise.
-#' Samples the time component and interpolates between values when there are repeats. This function has not been thoroughly tested, and is not implemented in several key cases.
+#' Sample the time component and interpolates between values when there are repeats. This function has not been thoroughly tested, and is not implemented in several key cases.
 #'
 #'
 #' @param multiSeries The high dimensional time series. Should be a matrix, with each row being an observation of the time series.
