@@ -181,8 +181,8 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
       if(BFIC > 3) {
         plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
           geom_point(alpha = .5) +
-          geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue") +
-          geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess", span = 1.5, se = FALSE, alpha = 1, color = "blue")
+          geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess",span =0.9 ,se = FALSE, alpha = 1, color = "blue") +
+          geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess",span = 0.6, se = FALSE, alpha = 1, color = "blue")
         plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
           geom_line()
         grid.newpage()
@@ -190,7 +190,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
       } else {
         plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
           geom_point(alpha = 0.5) +
-          geom_smooth(method = "loess",span = 1.5, se = FALSE)
+          geom_smooth(method = "loess",se = FALSE)
         plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
           geom_line()
         grid.newpage()
