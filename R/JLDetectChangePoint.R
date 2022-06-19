@@ -9,6 +9,7 @@
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
+#' @param showall set to TRUE to see all candidate plots
 #' @export
 #' @import stats
 #' @examples
@@ -24,7 +25,7 @@
 #'}
 
 
-JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE) {
+JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE,showall=FALSE) {
 
   fullDim <- ncol(multiSeries)
 
@@ -38,7 +39,22 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
   sd.rd <- .2 * sapply(1:reducedDim, function(x) sd(reducedData[,x]))
 
   reducedData <- t(t(reducedData) + rnorm(nrow(reducedData * reducedDim), 0, sd.rd))
+
   if(missing(setdetail)) {
-    cpbaywave::detectChangePoint(reducedData, useBFIC = useBFIC, showplot = showplot)
+    if(showall){
+      cpbaywave::detectChangePoint(reducedData[,1], useBFIC = useBFIC, showplot = showplot)
+      cpbaywave::detectChangePoint(reducedData[,2], useBFIC = useBFIC, showplot = showplot)
+      cpbaywave::detectChangePoint(reducedData[,3], useBFIC = useBFIC, showplot = showplot)
+      cpbaywave::detectChangePoint(reducedData[,4], useBFIC = useBFIC, showplot = showplot)
+      cpbaywave::detectChangePoint(reducedData[,5], useBFIC = useBFIC, showplot = showplot)
+
+
+    }
+    else{   #BEST GRAPH CHOICE GOES HERE TBD
+      cpbaywave::detectChangePoint(reducedData, useBFIC = useBFIC, showplot = showplot)
+
+
+      }
+
   } else cpbaywave::detectChangePoint(reducedData, setdetail, useBFIC = useBFIC, showplot = showplot)
 }
