@@ -42,19 +42,44 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   if(missing(setdetail)) {
     if(showall){
-      cpbaywave::detectChangePoint(reducedData[,1], useBFIC = useBFIC, showplot = showplot)
-      cpbaywave::detectChangePoint(reducedData[,2], useBFIC = useBFIC, showplot = showplot)
-      cpbaywave::detectChangePoint(reducedData[,3], useBFIC = useBFIC, showplot = showplot)
-      cpbaywave::detectChangePoint(reducedData[,4], useBFIC = useBFIC, showplot = showplot)
-      cpbaywave::detectChangePoint(reducedData[,5], useBFIC = useBFIC, showplot = showplot)
+      #Print every candidate plot
+      for (num in 1:reducedDim){
+        cpbaywave::detectChangePoint(reducedData[,num], useBFIC = useBFIC, showplot = showplot)
+      }
 
 
     }
-    else{   #BEST GRAPH CHOICE GOES HERE TBD
-      cpbaywave::detectChangePoint(reducedData, useBFIC = useBFIC, showplot = showplot)
+    else{   #BEST GRAPH CHOICE determined by range of index
+      best_rng <- Inf
 
+      for (number in 1:reducedDim){
+        grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
+        rng <- max(grph$index)-min(grph$index)
+        if (rng < best_rng){
+          best_rng <- rng
+          best_dim <- number
+
+        }
+
+      }
+      cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
 
       }
 
-  } else cpbaywave::detectChangePoint(reducedData, setdetail, useBFIC = useBFIC, showplot = showplot)
+  }
+  else { #same thing just with setdetail included (shows only best choice)
+
+    for (number in 1:reducedDim){
+      grph <- cpbaywave::detectChangePoint(reducedData[,number],setdetail, useBFIC = useBFIC, showplot = FALSE)
+      rng <- max(grph$index)-min(grph$index)
+      if (rng < best_rng){
+        best_rng <- rng
+        best_dim <- number
+
+      }
+
+    }
+
+    cpbaywave::detectChangePoint(reducedData[,best_dim], setdetail, useBFIC = useBFIC, showplot = showplot)
+  }
 }
