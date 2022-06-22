@@ -9,7 +9,7 @@
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
-#' @param showall set to TRUE to see all candidate plots
+#' @param showall set to TRUE to see all candidate plots [currently only shows highest BFIC value]
 #' @export
 #' @import stats
 #' @examples
@@ -42,10 +42,21 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   if(missing(setdetail)) {
     if(showall){
-      #Print every candidate plot
-      for (num in 1:reducedDim){
-        cpbaywave::detectChangePoint(reducedData[,num], useBFIC = useBFIC, showplot = showplot)
+
+
+      #showall currently only plots the graph with highest BFIC value. Need to add all plots in one.
+      best_val <- -Inf
+      for (number in 1:reducedDim){
+        grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
+        val <- grph$value
+        if (best_val < val){
+          best_val <- val
+          best_dim <- number
+        }
+
       }
+      cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
+
 
 
     }
