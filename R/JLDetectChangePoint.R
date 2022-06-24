@@ -44,12 +44,12 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
     if(showall){
 
 
-      #showall currently only plots the graph with highest BFIC value. Need to add all plots in one.
+      #showall only plots the graph with highest BFIC value. Need to add all plots in one.
       best_val <- -Inf
       for (number in 1:reducedDim){
         grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
         val <- grph$value
-        if (best_val < val){
+        if (val > best_val){
           best_val <- val
           best_dim <- number
         }
@@ -60,33 +60,34 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
 
     }
-    else{   #BEST GRAPH CHOICE determined by range of index
-      best_rng <- Inf
+    else{   #BEST GRAPH CHOICE by BFIC value
 
+      best_val <- -Inf
       for (number in 1:reducedDim){
         grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
-        rng <- max(grph$index)-min(grph$index)
-        if (rng < best_rng){
-          best_rng <- rng
+        val <- grph$value
+        if (val > best_val){
+          best_val <- val
           best_dim <- number
-
         }
 
       }
+
+
       cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
 
-      }
+    }
 
   }
   else { #same thing just with setdetail included (shows only best choice)
 
+    best_val <- -Inf
     for (number in 1:reducedDim){
       grph <- cpbaywave::detectChangePoint(reducedData[,number],setdetail, useBFIC = useBFIC, showplot = FALSE)
-      rng <- max(grph$index)-min(grph$index)
-      if (rng < best_rng){
-        best_rng <- rng
+      val <- grph$value
+      if (val > best_val){
+        best_val <- val
         best_dim <- number
-
       }
 
     }
