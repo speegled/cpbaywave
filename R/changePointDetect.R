@@ -66,7 +66,9 @@
 
 
 
-detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, padding = "insertion") {
+
+
+detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, showall=FALSE, padding = "insertion") {
 
     if(is.vector(a)) a <- as.matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
@@ -175,26 +177,13 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, pa
 
 
     if (showplot) {
-      BFIC <-  M2 - M1 - 0.5 * wid * log(m)
-      plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
-      probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
-      if(BFIC > 3) {
-        plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-          geom_point(alpha = .5) +
-          geom_line(data = plotData[1:indices[1],], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess",span =0.9 ,se = FALSE, alpha = 1, color = "blue") +
-          geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess",span = 0.6, se = FALSE, alpha = 1, color = "blue")
-        plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
-          geom_line()
-        grid.newpage()
-        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
-      } else {
-        plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
-          geom_point(alpha = 0.5) +
-          geom_smooth(method = "loess",se = FALSE)
-        plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
-          geom_line()
-        grid.newpage()
-        grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+
+      if(showall){
+        plt <- plotChangePoint(M1,M2,pad1,probvec,wid,m,n,data,indices,showall= TRUE)
+        return(plt)
+      }
+      else{
+        plotChangePoint(M1,M2,pad1,probvec,wid,m,n,data,indices,showall= FALSE)
       }
     }
 

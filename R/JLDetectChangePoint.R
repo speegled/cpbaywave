@@ -9,9 +9,11 @@
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
-#' @param showall set to TRUE to see all candidate plots [currently only shows highest BFIC value]
+#' @param showall set to TRUE to see the top three candidate plots based on highest BFIC value
 #' @export
 #' @import stats
+#' @import Rfast
+#' @import grid
 #' @examples
 #'\dontrun{
 #'
@@ -23,6 +25,7 @@
 #'JLDetectChangePoint(lennon_ts, reducedDim = 10,useGaussian = TRUE)
 #'
 #'}
+#'
 
 
 JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE,showall=FALSE) {
@@ -42,24 +45,43 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   if(missing(setdetail)) {
     if(showall){
+      #showall plots top 3 BFIC valued graphs
 
-
-      #showall only plots the graph with highest BFIC value. Need to add all plots in one.
       best_val <- -Inf
+      sec_best_val <- -Inf
+      thrd_best_val <- -Inf
+      vector <- c()
       for (number in 1:reducedDim){
-        grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
+        grph <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE))
         val <- grph$value
-        if (val > best_val){
-          best_val <- val
-          best_dim <- number
-        }
+        vector <- c(vector, val)
+      }
+
+      best_vector <- c()
+      for (number in 1:3){
+        best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
+        best_vector <- c(best_vector,best_dim)
 
       }
-      cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
+
+
+      print('Plot 1')
+      plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+      print('Plot 2')
+      plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+      print('Plot 3')
+      plt3 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[3]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+
+      grid.arrange(plt1, plt2,plt3, nrow = 1,ncol=3)
+
 
 
 
     }
+
     else{   #BEST GRAPH CHOICE by BFIC value
 
       best_val <- -Inf
