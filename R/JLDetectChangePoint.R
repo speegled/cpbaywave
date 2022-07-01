@@ -14,6 +14,7 @@
 #' @import stats
 #' @import Rfast
 #' @import grid
+#' @import gridExtra
 #' @examples
 #'\dontrun{
 #'
@@ -58,24 +59,49 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
       }
 
       best_vector <- c()
-      for (number in 1:3){
-        best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
-        best_vector <- c(best_vector,best_dim)
+      if (reducedDim > 2){
+        for (number in 1:3){
+          best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
+          best_vector <- c(best_vector,best_dim)
+
+
+        }
+
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 2')
+        plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 3')
+        plt3 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[3]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+
+        gridExtra::grid.arrange(plt1, plt2,plt3, nrow = 1,ncol=3)
 
       }
+      if (reducedDim == 2){
+        for (number in 1:2){
+          best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
+          best_vector <- c(best_vector,best_dim)
+        }
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 2')
+        plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        gridExtra::grid.arrange(plt1, plt2, nrow = 1,ncol=2)
+      }
+      else{
+        best_dim <- Rfast::nth(vector, 1, descending = T,index.return=TRUE)
+        best_vector <- c(best_vector,best_dim)
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        gridExtra::grid.arrange(plt1, nrow = 1,ncol=1)
+      }
 
-
-      print('Plot 1')
-      plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
-      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
-      print('Plot 2')
-      plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
-      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
-      print('Plot 3')
-      plt3 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[3]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
-      print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
-
-      grid.arrange(plt1, plt2,plt3, nrow = 1,ncol=3)
 
 
 

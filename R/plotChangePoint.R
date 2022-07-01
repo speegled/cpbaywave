@@ -49,7 +49,6 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
       geom_smooth(method = "loess",se = FALSE)
     plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
       geom_line()
-    #grid.newpage()
     rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last")
 
 
