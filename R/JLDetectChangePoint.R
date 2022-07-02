@@ -55,6 +55,7 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
       for (number in 1:reducedDim){
         grph <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE))
         val <- grph$value
+
         vector <- c(vector, val)
       }
 
@@ -63,7 +64,6 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
         for (number in 1:3){
           best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
           best_vector <- c(best_vector,best_dim)
-
 
         }
 
