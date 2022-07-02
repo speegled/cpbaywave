@@ -80,7 +80,7 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
         gridExtra::grid.arrange(plt1, plt2,plt3, nrow = 1,ncol=3)
 
       }
-      if (reducedDim == 2){
+      else if (reducedDim == 2){
         for (number in 1:2){
           best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
           best_vector <- c(best_vector,best_dim)
