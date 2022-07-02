@@ -9,9 +9,12 @@
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param showplot set to TRUE to see plot of 1-d time series and probability plot.
-#' @param showall set to TRUE to see all candidate plots [currently only shows highest BFIC value]
+#' @param showall set to TRUE to see the top three candidate plots based on highest BFIC value
 #' @export
 #' @import stats
+#' @import Rfast
+#' @import grid
+#' @import gridExtra
 #' @examples
 #'\dontrun{
 #'
@@ -23,6 +26,7 @@
 #'JLDetectChangePoint(lennon_ts, reducedDim = 10,useGaussian = TRUE)
 #'
 #'}
+#'
 
 
 JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE,showall=FALSE) {
@@ -42,9 +46,70 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
 
   if(missing(setdetail)) {
     if(showall){
+      #showall plots top 3 BFIC valued graphs
+
+      best_val <- -Inf
+      sec_best_val <- -Inf
+      thrd_best_val <- -Inf
+      vector <- c()
+      for (number in 1:reducedDim){
+        grph <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE))
+        val <- grph$value
+
+        vector <- c(vector, val)
+      }
+
+      best_vector <- c()
+      if (reducedDim > 2){
+        for (number in 1:3){
+          best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
+          best_vector <- c(best_vector,best_dim)
+
+        }
+
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 2')
+        plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 3')
+        plt3 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[3]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+
+        gridExtra::grid.arrange(plt1, plt2,plt3, nrow = 1,ncol=3)
+
+      }
+      if (reducedDim == 2){
+        for (number in 1:2){
+          best_dim <- Rfast::nth(vector, number, descending = T,index.return=TRUE)
+          best_vector <- c(best_vector,best_dim)
+        }
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        print('Plot 2')
+        plt2 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[2]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        gridExtra::grid.arrange(plt1, plt2, nrow = 1,ncol=2)
+      }
+      else{
+        best_dim <- Rfast::nth(vector, 1, descending = T,index.return=TRUE)
+        best_vector <- c(best_vector,best_dim)
+        print('Plot 1')
+        plt1 <- suppressMessages(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = showplot,showall=TRUE))
+        print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
+        gridExtra::grid.arrange(plt1, nrow = 1,ncol=1)
+      }
 
 
-      #showall currently only plots the graph with highest BFIC value. Need to add all plots in one.
+
+
+
+    }
+
+    else{   #BEST GRAPH CHOICE by BFIC value
+
       best_val <- -Inf
       for (number in 1:reducedDim){
         grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
@@ -55,38 +120,22 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
         }
 
       }
+
+
       cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
-
-
 
     }
-    else{   #BEST GRAPH CHOICE determined by range of index
-      best_rng <- Inf
-
-      for (number in 1:reducedDim){
-        grph <- cpbaywave::detectChangePoint(reducedData[,number], useBFIC = useBFIC, showplot = FALSE)
-        rng <- max(grph$index)-min(grph$index)
-        if (rng < best_rng){
-          best_rng <- rng
-          best_dim <- number
-
-        }
-
-      }
-      cpbaywave::detectChangePoint(reducedData[,best_dim], useBFIC = useBFIC, showplot = showplot)
-
-      }
 
   }
   else { #same thing just with setdetail included (shows only best choice)
 
+    best_val <- -Inf
     for (number in 1:reducedDim){
       grph <- cpbaywave::detectChangePoint(reducedData[,number],setdetail, useBFIC = useBFIC, showplot = FALSE)
-      rng <- max(grph$index)-min(grph$index)
-      if (rng < best_rng){
-        best_rng <- rng
+      val <- grph$value
+      if (val > best_val){
+        best_val <- val
         best_dim <- number
-
       }
 
     }
