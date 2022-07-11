@@ -156,6 +156,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
 
 
 
+
     # If M1 > 3, good evidence of change point -
     M2 = max(probvec)
     m <- nrow(DWTmat)
