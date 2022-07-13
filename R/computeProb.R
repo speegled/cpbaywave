@@ -17,13 +17,17 @@ computeProb <- function(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE) {
     # Compute A
     A <- t(DWTmat) %*% DWTmat
 
+
     # compute B vector
     B <- as.vector(t(DWTmat) %*% Qvec)
 
     # compute C scalar
     C <- sum(Qvec^2)
+
     G <- A - (1/C) * ((B %*% t(B)))
+
     H <- sum(log(diag(chol(G))))
+
     } else{
       A <- sum(DWTmat^2)
       B <- sum(DWTmat * Qvec)
@@ -31,8 +35,10 @@ computeProb <- function(DWTmat, Qvec, useBFIC = FALSE, isDataVector = FALSE) {
       G <- A - (1/C) * B^2
       H <- log(G)
     }
-    BFIC <- (-0.5) * log(C) + (-(m - wid - 1)/2) * log((det(A - (1/C) * ((B %*% t(B)))))) + (wid/2) * log(pi) + log(gamma(m/2 +
-        0.5 - wid/2))
+    #GOES TO INF
+    BFIC <- (-0.5) * log(C) + (-(m - wid - 1)/2) * log((det(A - (1/C) * ((B %*% t(B)))))) + (wid/2) * log(pi) + lgamma(m/2 + 0.5 - wid/2)
+
+
 
     return(ifelse(useBFIC, BFIC, (-0.5) * log(C) + (-(m - wid - 1)/2) * H))
 }

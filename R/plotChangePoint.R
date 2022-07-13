@@ -30,6 +30,7 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
   BFIC <-  M2 - M1 - 0.5 * wid * log(m)
   plotData <- data.frame(x = 1:(n - pad1 - 1), y = data[(pad1+1):(n-1),1])
   probData <- data.frame(x = 1:(n - pad1 - 1), probvec = probvec[(pad1+1):(n-1)])
+
   if(BFIC > 3) {
     plot1 <- ggplot(plotData, aes_string(x = 'x', y = 'y')) +
       geom_point(alpha = .5) +
