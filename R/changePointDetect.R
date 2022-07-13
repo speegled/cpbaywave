@@ -160,10 +160,10 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     # If M1 > 3, good evidence of change point -
     M2 = max(probvec)
     m <- nrow(DWTmat)
-    t1 = gamma(m/2 + 0.5)
+    t1 = lgamma(m/2 + 0.5)
     A <- t(DWTmat) %*% DWTmat
     t2 = det(A)  #Numerically unstable.
-    M1 = log(t1) + (-m/2 + wid/2) * log(t2)
+    M1 = t1 + (-m/2 + wid/2) * log(t2)
 
 
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
