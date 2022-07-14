@@ -92,7 +92,7 @@ JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE
         print(cpbaywave::detectChangePoint(reducedData[,best_vector[1]], useBFIC = useBFIC, showplot = FALSE))
         gridExtra::grid.arrange(plt1, plt2, nrow = 1,ncol=2)
       }
-      else{
+      if (reducedDim < 2){
         best_dim <- Rfast::nth(vector, 1, descending = T,index.return=TRUE)
         best_vector <- c(best_vector,best_dim)
         print('Plot 1')
