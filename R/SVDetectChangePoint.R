@@ -15,8 +15,10 @@
 #' @import Rfast
 #' @import grid
 #' @import gridExtra
-#' @examples
-#'\dontrun{
+#'
+#'
+#'
+
 
 
 
