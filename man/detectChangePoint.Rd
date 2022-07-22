@@ -4,8 +4,14 @@
 \alias{detectChangePoint}
 \title{Detect Change Point}
 \usage{
-detectChangePoint(a, setdetail, useBFIC = TRUE, showplot = FALSE,
-  padding = "insertion")
+detectChangePoint(
+  a,
+  setdetail,
+  useBFIC = TRUE,
+  showplot = FALSE,
+  showall = FALSE,
+  padding = "insertion"
+)
 }
 \arguments{
 \item{a}{A vector or matrix representing time series. If matrix, each row is the value at a single time. Numerically unstable if data dimension is greater than about 50. Use JLDetectChangePoint in that case.}

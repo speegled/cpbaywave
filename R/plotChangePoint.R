@@ -39,6 +39,9 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
     plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
       geom_line()
 
+    plot2 <- plot2 + theme(axis.text.y=element_blank(),
+                  axis.ticks.y=element_blank())
+
     rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last")
 
 
@@ -50,6 +53,8 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
       geom_smooth(method = "loess",se = FALSE)
     plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
       geom_line()
+    plot2 <- plot2 + theme(axis.text.y=element_blank(),
+                           axis.ticks.y=element_blank())
     rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last")
 
 
@@ -68,6 +73,8 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
         geom_line(data = plotData[(indices[1] + 1):(n-pad1 - 1),], mapping = aes_string(x = 'x', y = 'y'), stat = "smooth", method = "loess",span = 0.6, se = FALSE, alpha = 1, color = "blue")
       plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
         geom_line()
+      plot2 <- plot2 + theme(axis.text.y=element_blank(),
+                             axis.ticks.y=element_blank())
       grid.newpage()
       grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
 
@@ -79,6 +86,8 @@ plotChangePoint <- function(M1,M2,pad1,probvec,wid,m,n,data,indices,showall=FALS
         geom_smooth(method = "loess",se = FALSE)
       plot2 <- ggplot(probData, aes_string(x = 'x', y = 'probvec')) +
         geom_line()
+      plot2 <- plot2 + theme(axis.text.y=element_blank(),
+                             axis.ticks.y=element_blank())
       grid.newpage()
       grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
 
