@@ -4,8 +4,13 @@
 \alias{persistenceChangePoint}
 \title{Persistence Diagram Change Point Detection}
 \usage{
-persistenceChangePoint(multiSeries, maxDimension, maxScale,
-  useWasserstein = TRUE, useBootstrap = FALSE)
+persistenceChangePoint(
+  multiSeries,
+  maxDimension,
+  maxScale,
+  useWasserstein = TRUE,
+  useBootstrap = FALSE
+)
 }
 \arguments{
 \item{multiSeries}{A list of matrices, where each row of the matrix corresponds to a point in Euclidean space.}

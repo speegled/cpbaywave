@@ -4,8 +4,16 @@
 \alias{repJLDetectChangePoint}
 \title{Repeated JL Dimension Reduction}
 \usage{
-repJLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = TRUE,
-  setdetail, useBFIC = TRUE, numRepeat = 100, numKeep = 2, alpha = 0.05)
+repJLDetectChangePoint(
+  multiSeries,
+  reducedDim = 5,
+  useGaussian = TRUE,
+  setdetail,
+  useBFIC = TRUE,
+  numRepeat = 100,
+  numKeep = 2,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}

@@ -4,8 +4,16 @@
 \alias{metricChangePoint}
 \title{Change Point Detection in Metric Spaces}
 \usage{
-metricChangePoint(multiSeries, distance, useGaussian = TRUE, useBFIC = TRUE,
-  setdetail, reducedDim = 10, useBootstrap = FALSE)
+metricChangePoint(
+  multiSeries,
+  distance,
+  useGaussian = TRUE,
+  useBFIC = TRUE,
+  useMetricProject = FALSE,
+  setdetail,
+  reducedDim = 10,
+  useBootstrap = FALSE
+)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}
