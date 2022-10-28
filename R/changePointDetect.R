@@ -69,7 +69,6 @@
 
 
 detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, showall=FALSE, padding = "insertion") {
-    browser()
     if(is.vector(a)) a <- as.matrix(a,ncol = 1)
     if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
 
@@ -162,8 +161,8 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     m <- nrow(DWTmat)
     # t1 = gamma(m/2 + 0.5)
     A <- t(DWTmat) %*% DWTmat
-    t2 = det(A)  #Numerically unstable.
-    M1 = lgamma(m/2 + 0.5) + (-m/2 + wid/2) * log(t2)
+    t2 = det(A, log = T)  #Numerically unstable.
+    M1 = lgamma(m/2 + 0.5) + (-m/2 + wid/2) * t2
 
 
     ifelse(useBFIC, value <- (M2 - M1 - 0.5 * wid * log(m)), value <- max(probvec))
