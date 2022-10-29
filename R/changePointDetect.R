@@ -7,6 +7,7 @@
 #' @param useBFIC Set to true to choose the change point with highest BFIC.
 #' @param showplot Set to true to see a plot of the probabilities of a change point at each time, together with a scatterplot of the first dimension versus time.
 #' @param padding One of mirror, extension or insertion. Default is insertion.
+#' @param slow Set to TRUE if you want to check each point separately, rather than fast search for change point.
 #' @return value The value of the BFIC or maximium probability if useBFIC = FALSE. BFIC greater than 3 is evidence that there is a change in mean.
 #' @return index A vector giving the 3-5 most likely (or highest IC if useBFIC is TRUE) indices where a change point occurred.
 #' @export
@@ -68,13 +69,17 @@
 
 
 
-detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, showall=FALSE, padding = "insertion") {
-    if(is.vector(a)) a <- as.matrix(a,ncol = 1)
-    if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
+detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, showall=FALSE, padding = "insertion", slow = FALSE) {
 
-    if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
-    F <- 10
-    n <- nrow(a)
+  if(is.vector(a)) a <- as.matrix(a,ncol = 1)
+  if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
+
+  if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
+  F <- 10
+  n <- nrow(a)
+  if(slow || n <= 128) {
+    detectChangePoint(a, setdetail, useBFIC, showplot, showall, padding)
+  } else {
     wid <- ncol(a)
     isDataVector <- FALSE
 
@@ -94,13 +99,13 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     #
     #Padding by extending estimated first entry + some noise.
     if(padding == "extend" && pad1 > 0) {
-    xvals <- 1:10
-    padVals <- matrix(rep(0, pad1 * wid), ncol = wid)
-    for(i in 1:wid) {
-      lm.model <- lm(a[1:10,i]~xvals)
-      padVals[,i] <- predict(lm.model, newdata = data.frame(xvals = (-1 * pad1 + 1):0)) + rnorm(pad1, 0, mean(sd(lm.model$residuals), sd(a[1:10,i])))
-    }
-    data <- rbind(padVals, a)
+      xvals <- 1:10
+      padVals <- matrix(rep(0, pad1 * wid), ncol = wid)
+      for(i in 1:wid) {
+        lm.model <- lm(a[1:10,i]~xvals)
+        padVals[,i] <- predict(lm.model, newdata = data.frame(xvals = (-1 * pad1 + 1):0)) + rnorm(pad1, 0, mean(sd(lm.model$residuals), sd(a[1:10,i])))
+      }
+      data <- rbind(padVals, a)
     }
     #data <- rbind(matrix(rnorm(pad1 * wid, a[1,], 0.1), ncol = wid), a)
     if(padding == "mirror" && pad1 > 0)
@@ -141,21 +146,32 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     # wrapper for accessD that pulls out multiple levels and returns a vector of details unlist(sapply(...)) pulls out
     # the desired levels of detail coefficients and combines them in a vector
     DWTmat <- apply(data, 2, function(x) unlist(sapply(J - setdetail - 1, function(y) accessD(wd(x,
-        filter.number = F, family = "DaubExPhase"), y))))
+                                                                                                 filter.number = F, family = "DaubExPhase"), y))))
 
     # Creating idealized data set and its discrete wavelet transform Have 0's followed by 1's with change point in each
     # possible position
-    probvec <- sapply(1:(n - 1), function(x) {
-        tauvec <- c(rep(0, x), rep(1, nxt - x))
-        Qvec <- unlist(sapply(J - setdetail - 1, function(y) accessD(wd(tauvec, filter.number = F,
-            family = "DaubExPhase"), y)))
-        computeProb(DWTmat, Qvec, useBFIC, isDataVector)
+    probvec <- rep(-Inf, n - 1)
+    skip = ceiling(n/64 + 1)
+    probvec[seq(3, n - 3, by = skip)] <- sapply(seq(3, n - 3, by = skip), function(x) {
+      tauvec <- c(rep(0, x), rep(1, nxt - x))
+      Qvec <- unlist(sapply(J - setdetail - 1, function(y) accessD(wd(tauvec, filter.number = F,
+                                                                      family = "DaubExPhase"), y)))
+      computeProb(DWTmat, Qvec, useBFIC, isDataVector)
     })
 
+    check_further <- sort(probvec, index.return = T, decreasing = T)$ix[1:5]
+    check_further <- unique(as.vector(sapply(check_further, function(x) {
+      c(x - 1:(skip - 1), x + 1:(skip - 1))
+    })))
+    check_further <- check_further[check_further > 3 & check_further < (n - 3)]
+    probvec[check_further] <- sapply(check_further, function(x) {
+      tauvec <- c(rep(0, x), rep(1, nxt - x))
+      Qvec <- unlist(sapply(J - setdetail - 1, function(y) accessD(wd(tauvec, filter.number = F,
+                                                                      family = "DaubExPhase"), y)))
+      computeProb(DWTmat, Qvec, useBFIC, isDataVector)
+    })
 
-
-
-
+    probvec <- ifelse(probvec == -Inf, min(probvec), probvec)
     # If M1 > 3, good evidence of change point -
     M2 = max(probvec)
     m <- nrow(DWTmat)
@@ -194,4 +210,6 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
 
 
     return(list(value = value, index = unique(indices)))
+
+  }
 }

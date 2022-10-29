@@ -29,7 +29,7 @@
 #'
 
 
-JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE,showall=FALSE) {
+JLDetectChangePoint <- function(multiSeries, reducedDim = 5, useGaussian = FALSE, useBFIC = TRUE, setdetail, showplot = TRUE,showall=FALSE, fast = TRUE) {
 
   fullDim <- ncol(multiSeries)
 

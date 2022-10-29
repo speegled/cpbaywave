@@ -15,6 +15,7 @@
 #' @param useJL Use Johnson-Lindenstrauss dimension reduction. Not currently implemented for useJL = FALSE.
 #' @param rotate_xaxis set to TRUE if you wish to rotate the values on the x-axis; will not print out all values
 #' @param returnPlot set to TRUE if you wish for the plot to be returned.
+#' @param fast set to FALSE if you wish to check every possible change point.
 #' @return List with values
 #' \item{prop}{The proportion of times the BFIC of the bootstrapped time series showed significance.}
 #' \item{indices}{A table of indices that were in the numKeep most likely change points at least once, together with the number of times that they occured.}
@@ -43,7 +44,8 @@ bootJLDetectChangePoint <- function(multiSeries,
                                     alpha = .05,
                                     useJL = TRUE,
                                     rotate_xaxis = FALSE,
-                                    returnPlot = FALSE) {
+                                    returnPlot = FALSE,
+                                    fast = TRUE) {
 
   if(ncol(multiSeries) < reducedDim && useJL) {
     warning("reduced dimension greater than original, useJL set to FALSE")
@@ -89,7 +91,7 @@ bootJLDetectChangePoint <- function(multiSeries,
           a[i,] <- multiSeries[nTrue[i],]
         }
       }
-      scoreIndex1 <- cpbaywave::JLDetectChangePoint(as.matrix(a, ncol = ncol(multiSeries)), reducedDim = reducedDim, useGaussian= useGaussian, setdetail = setdetail, useBFIC = useBFIC, showplot = FALSE)
+      scoreIndex1 <- cpbaywave::JLDetectChangePoint(as.matrix(a, ncol = ncol(multiSeries)), reducedDim = reducedDim, useGaussian= useGaussian, setdetail = setdetail, useBFIC = useBFIC, showplot = FALSE, fast = fast)
       scoreIndex <- data.frame(value = rep(scoreIndex1$value, numKeep), index = nTrue[scoreIndex1$index[1:numKeep]])
       results <- rbind(results, scoreIndex)
     }
