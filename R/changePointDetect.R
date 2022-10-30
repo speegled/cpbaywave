@@ -77,9 +77,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
   if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
   F <- 10
   n <- nrow(a)
-  if(slow || n <= 128) {
-    detectChangePoint(a, setdetail, useBFIC, showplot, showall, padding)
-  } else {
+  {
     wid <- ncol(a)
     isDataVector <- FALSE
 
@@ -145,8 +143,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     # Compute details of discrete wavelet transform of data by column and store desired details in DWTmat TODO: write
     # wrapper for accessD that pulls out multiple levels and returns a vector of details unlist(sapply(...)) pulls out
     # the desired levels of detail coefficients and combines them in a vector
-    DWTmat <- apply(data, 2, function(x) unlist(sapply(J - setdetail - 1, function(y) accessD(wd(x,
-                                                                                                 filter.number = F, family = "DaubExPhase"), y))))
+    DWTmat <- apply(data, 2, function(x) unlist(sapply(J - setdetail - 1, function(y) accessD(wd(x,filter.number = F, family = "DaubExPhase"), y))))
 
     # Creating idealized data set and its discrete wavelet transform Have 0's followed by 1's with change point in each
     # possible position
