@@ -75,9 +75,14 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
   if(ncol(a) > 100) stop("dimension too high. consider JLdetectChangePoint")
 
   if(missing(setdetail)) setdetail <- 0:floor(log2(nrow(a) - 1))
+  if(length(setdetail) < 3) {
+    stop("setedtail must be a vector of length at least 3, e.g. setdetail = 1:5")
+  }
   F <- 10
   n <- nrow(a)
-  {
+  oldsetdetail <- setdetail
+  runs <- sapply(3:length(oldsetdetail), function(x) {
+    setdetail <- oldsetdetail[1:x]
     wid <- ncol(a)
     isDataVector <- FALSE
 
@@ -187,6 +192,28 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
       probvec <- probvec[order(id) <= n]
       data <- a
     }
+
+    list(M1, M2, pad1, probvec, wid, m, n, data, indices, value)
+  } )
+
+  winner <- which.max(sapply(1:(length(oldsetdetail) - 2), function(x) {
+    runs[10,x][[1]]
+  }))
+
+  runs <- runs[,winner]
+  M1 <- runs[[1]]
+  M2 <- runs[[2]]
+  pad1 <- runs[[3]]
+  probvec <- runs[[4]]
+  wid <- runs[[5]]
+  m <- runs[[6]]
+  n <- runs[[7]]
+  data <- runs[[8]]
+  indices <- runs[[9]]
+  value <- runs[[10]]
+
+  {
+
 
 
     if (showplot) {
