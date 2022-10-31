@@ -4,8 +4,14 @@
 \alias{persistenceChangePoint}
 \title{Persistence Diagram Change Point Detection}
 \usage{
-persistenceChangePoint(multiSeries, maxDimension, maxScale,
-  useWasserstein = TRUE, useBootstrap = FALSE)
+persistenceChangePoint(
+  multiSeries,
+  maxDimension,
+  maxScale,
+  useWasserstein = TRUE,
+  useBootstrap = FALSE,
+  ...
+)
 }
 \arguments{
 \item{multiSeries}{A list of matrices, where each row of the matrix corresponds to a point in Euclidean space.}
@@ -17,6 +23,8 @@ persistenceChangePoint(multiSeries, maxDimension, maxScale,
 \item{useWasserstein}{set to False to use bottleneck L^\\infty distance.}
 
 \item{useBootstrap}{set to TRUE if you want to bootstrap the change point locations. Not advisable unless the time series length is equal to a power of 2 or slighlty less than a power of 2.}
+
+\item{...}{additional parameters passed to the distance function}
 }
 \value{
 value The BFIC value associated with change point. Bigger than 3 is considered significant.

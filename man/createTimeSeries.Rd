@@ -21,7 +21,7 @@ createTimeSeries(mu1, mu2, sigma, n = 128, tau = 72)
 A vector of length n containing multivariate normal entries.
 }
 \description{
-This function creates a multi-dimensional normal time series with normal entries and a possible change point in the mean. Running with no
+This function creates a multi-dimensional nomral time series with normal entries and a possible change point in the mean. Running with no
 arguments creates five dimensional normal time series with mean 0, mean 1 and identity covariance matrix.
 }
 \examples{

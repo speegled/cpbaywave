@@ -12,6 +12,7 @@
 #' @param setdetail Optional argument to set the detail level you wish to use. Default is all details except one.
 #' @param useBFIC Optional argument to use BFIC to decide change point location.
 #' @param useBootstrap Set to true if you wish to bootstrap a cutoff for significance of indices.
+#' @param ... Additional parameters passed to the distance function
 #' @import ggplot2
 #' @import testthat
 #' @export
@@ -62,7 +63,7 @@ metricChangePoint <- function(multiSeries,
       dists <- matrix(rep(0, N * N), ncol = N)
       for(i in 1:(N-1)) {
         for(j in (i + 1):N) {
-          dists[i,j] <- distance(multiSeries[[i]], multiSeries[[j]])
+          dists[i,j] <- distance(multiSeries[[i]], multiSeries[[j]], ...)
           dists[j,i] <- dists[i,j]
         }
       }
@@ -86,7 +87,7 @@ metricChangePoint <- function(multiSeries,
         B <- multiSeries[[coords[2]]][[1]]
         den <- distance(A, B)
         for(j in 1:N) {
-          dists[i, j] <- (distance(A, multiSeries[[j]][[1]])^2 - distance(B, multiSeries[[j]][[1]])^2)/den
+          dists[i, j] <- (distance(A, multiSeries[[j]][[1]], ...)^2 - distance(B, multiSeries[[j]][[1]],...)^2)/den
         }
       }
     }

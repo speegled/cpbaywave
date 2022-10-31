@@ -4,9 +4,20 @@
 \alias{bootJLDetectChangePoint}
 \title{Bootstrap Change Point Detection with Johnson-Lindenstrauss dimension reduction}
 \usage{
-bootJLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = TRUE,
-  setdetail, useBFIC = TRUE, numRepeat = 100, numKeep = 2, alpha = 0.05,
-  useJL = TRUE)
+bootJLDetectChangePoint(
+  multiSeries,
+  reducedDim = 5,
+  useGaussian = TRUE,
+  setdetail,
+  useBFIC = TRUE,
+  numRepeat = 100,
+  numKeep = 2,
+  alpha = 0.05,
+  useJL = TRUE,
+  rotate_xaxis = FALSE,
+  returnPlot = FALSE,
+  fast = TRUE
+)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}
@@ -26,6 +37,12 @@ bootJLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = TRUE,
 \item{alpha}{The significance level of the bootstrap.}
 
 \item{useJL}{Use Johnson-Lindenstrauss dimension reduction. Not currently implemented for useJL = FALSE.}
+
+\item{rotate_xaxis}{set to TRUE if you wish to rotate the values on the x-axis; will not print out all values}
+
+\item{returnPlot}{set to TRUE if you wish for the plot to be returned.}
+
+\item{fast}{set to FALSE if you wish to check every possible change point.}
 }
 \value{
 List with values

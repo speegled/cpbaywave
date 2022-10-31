@@ -12,6 +12,7 @@
 #' @param maxScale Maximum scale to consider in persistence diagrams.
 #' @param useWasserstein set to False to use bottleneck L^\\infty distance.
 #' @param useBootstrap set to TRUE if you want to bootstrap the change point locations. Not advisable unless the time series length is equal to a power of 2 or slighlty less than a power of 2.
+#' @param ... additional parameters passed to the distance function
 #' @return value The BFIC value associated with change point. Bigger than 3 is considered significant.
 #' @return index The five most likely change points.
 #' @import stats
@@ -34,7 +35,7 @@
 #'
 
 
-persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasserstein = TRUE, useBootstrap = FALSE) {
+persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasserstein = TRUE, useBootstrap = FALSE,...) {
 
   if(maxDimension > 3) {
     warning("maxdimension reset to 3")
@@ -53,5 +54,5 @@ persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasse
                                              maxscale = maxScale,
                                              library = "GUDHI",
                                              printProgress = FALSE)$diagram)
-  metricChangePoint(Diags, wasserstein, useBootstrap = useBootstrap)
+  metricChangePoint(Diags, wasserstein, useBootstrap = useBootstrap, ...)
 }

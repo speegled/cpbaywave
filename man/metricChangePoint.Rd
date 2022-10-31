@@ -4,8 +4,16 @@
 \alias{metricChangePoint}
 \title{Change Point Detection in Metric Spaces}
 \usage{
-metricChangePoint(multiSeries, distance, useGaussian = TRUE, useBFIC = TRUE,
-  setdetail, reducedDim = 10, useBootstrap = FALSE)
+metricChangePoint(
+  multiSeries,
+  distance,
+  useGaussian = TRUE,
+  useBFIC = TRUE,
+  useMetricProject = FALSE,
+  setdetail,
+  reducedDim = 10,
+  useBootstrap = FALSE
+)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}
@@ -21,6 +29,8 @@ metricChangePoint(multiSeries, distance, useGaussian = TRUE, useBFIC = TRUE,
 \item{reducedDim}{The dimension you want to project onto. Should be less than the dimension of the time series. Default is 10.}
 
 \item{useBootstrap}{Set to true if you wish to bootstrap a cutoff for significance of indices.}
+
+\item{...}{Additional parameters passed to the distance function}
 }
 \description{
 Determines the most likely locations of a change point in distribution of elements in a metric space. Forms a new time series which is

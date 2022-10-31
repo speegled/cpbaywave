@@ -4,8 +4,16 @@
 \alias{JLDetectChangePoint}
 \title{Johnson-Lindendstrauss Dimension Reduction}
 \usage{
-JLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = FALSE,
-  useBFIC = TRUE, setdetail, showplot = TRUE)
+JLDetectChangePoint(
+  multiSeries,
+  reducedDim = 5,
+  useGaussian = FALSE,
+  useBFIC = TRUE,
+  setdetail,
+  showplot = TRUE,
+  showall = FALSE,
+  fast = TRUE
+)
 }
 \arguments{
 \item{multiSeries}{The high dimensional time series. Should be a matrix, with each row being an observation of the time series.}
@@ -19,6 +27,8 @@ JLDetectChangePoint(multiSeries, reducedDim = 5, useGaussian = FALSE,
 \item{setdetail}{Optional argument to set the detail level you wish to use. Default is all details.}
 
 \item{showplot}{set to TRUE to see plot of 1-d time series and probability plot.}
+
+\item{showall}{set to TRUE to see the top three candidate plots based on highest BFIC value}
 }
 \description{
 Computes a random projection with Bernoulli or Gaussian entries of each element in a time series, then calls detectChangePoint to determine where the
@@ -36,4 +46,5 @@ image(matrix(lennon_ts[90,], nrow = 256), col = gray(0:100/100))
 JLDetectChangePoint(lennon_ts, reducedDim = 10,useGaussian = TRUE)
 
 }
+
 }
