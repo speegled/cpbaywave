@@ -35,7 +35,7 @@
 #'
 
 
-persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasserstein = TRUE, useBootstrap = FALSE,...) {
+persistenceChangePoint <- function(multiSeries, maxDimension, maxScale, useWasserstein = TRUE, useBootstrap = FALSE, ...) {
 
   if(maxDimension > 3) {
     warning("maxdimension reset to 3")

@@ -42,7 +42,8 @@ metricChangePoint <- function(multiSeries,
                               useMetricProject = FALSE,
                               setdetail,
                               reducedDim = 10,
-                              useBootstrap = FALSE) {
+                              useBootstrap = FALSE,
+                              ...) {
   if(is.matrix(multiSeries)) {
     multiSeries <- lapply(seq_len(nrow(multiSeries)), function(i) multiSeries[i,])
   }
