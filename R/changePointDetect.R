@@ -167,6 +167,7 @@ detectChangePoint <- function(a, setdetail, useBFIC = TRUE, showplot = FALSE, sh
     })))
     check_further <- check_further[check_further > 3 & check_further < (n - 3)]
     probvec[check_further] <- sapply(check_further, function(x) {
+      #for idealized version, don't you want to use bc = "symmetric"????
       tauvec <- c(rep(0, x), rep(1, nxt - x))
       Qvec <- unlist(sapply(J - setdetail - 1, function(y) accessD(wd(tauvec, filter.number = F,
                                                                       family = "DaubExPhase"), y)))
