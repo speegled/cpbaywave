@@ -4,3 +4,6 @@
 .Ruserdata
 .R*
 inst/doc
+.DS_Store
+simulations_atrous
+
